@@ -54,24 +54,24 @@ def open_specfile(filename):
         sys.exit(1)
 
 
-# __HeaderDirectives = r'(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|'\
-# r'SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)'
-# __SectionDirectives = r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|'\
-# r'PACKAGE|DOC|CHANGELOG)'
-# __MacroDefDirectives = r'(define|global)'
-# __MacroUndefDirectives = 'undefine'
-# __ConditionBegDirectives = r'(if|ifarch|ifos|ifnarch|ifnos|else)'
-# __ConditionEndDirectives = 'endif'
+#__HeaderDirectives = r'(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|'\
+#r'SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)'
+#__SectionDirectives = r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|'\
+#r'PACKAGE|CHANGELOG)'
+#__MacroDefDirectives = r'(define|global)'
+#__MacroUndefDirectives = 'undefine'
+#__ConditionBegDirectives = r'(if|ifarch|ifos|ifnarch|ifnos|else)'
+#__ConditionEndDirectives = 'endif'
 
 
-# __match_tag_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
-# r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ').+?(?=\n\S+\:|%' + \
-# self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
+#__match_tag_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
+#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ').+?(?=\n\S+\:|%' + \
+#self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
 
 
-# __match_section_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
-# r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ')\s[\w\W]+?(?=\n\S+\:|%' + \
-# self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
+#__match_section_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
+#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ')\s[\w\W]+?(?=\n\S+\:|%' + \
+#self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
 
 
 
@@ -83,8 +83,8 @@ class SpecfileParserScanner(runtime.Scanner):
         ('BEGINNING', re.compile('\\s*')),
         ('TAG_KEY', re.compile('(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\s*|(SOURCE|PATCH)\\d*\\s*')),
         ('COLON', re.compile('\\:')),
-        ('TAG_VALUE', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\\s*(?=\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
-        ('COMMENT', re.compile('\\#.+')),
+        ('TAG_VALUE', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\\s*(?=\\S+\\:|%(DESCRIP|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
+        ('COMMENT', re.compile('\\#.+\\s*')),
         ('PERCENT_SIGN', re.compile('%')),
         ('MACRO_DEF_KEYWORD', re.compile('(define|global)\\s*')),
         ('MACRO_UNDEF_KEYWORD', re.compile('undefine\\s*')),
@@ -93,14 +93,14 @@ class SpecfileParserScanner(runtime.Scanner):
         ('NAME', re.compile('\\S+[ \\t\\n\\r\\f\\v]*')),
         ('NEWLINE', re.compile('\\n')),
         ('MACRO_NAME', re.compile('\\S+\\s*')),
-        ('MACRO_BODY', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\\s[\\w\\W]+?(?=\\n\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
+        ('MACRO_BODY', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\\s[\\w\\W]+?(?=\\n\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
         ('CONDITION_BEG_KEYWORD', re.compile('(if|ifarch|ifos|ifnarch|ifnos)\\s*')),
         ('CONDITION_ELSE_KEYWORD', re.compile('else\\s*')),
         ('CONDITION_EXPRESSION', re.compile('.*')),
         ('CONDITION_BODY', re.compile('[\\W\\w]*?(%(else|endif))')),
         ('CONDITION_END_KEYWORD', re.compile('endif\\s*')),
-        ('SECTION_KEY', re.compile('(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE)[ \\t\\n\\r\\f\\v]*')),
-        ('SECTION_CONTENT', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\\s[\\w\\W]+?(?=\\n\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
+        ('SECTION_KEY', re.compile('(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \\t\\r\\f\\v]*')),
+        ('SECTION_CONTENT', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\\w\\W]+?(?=\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
         ('CHANGELOG_KEYWORD', re.compile('changelog\\s*')),
         ('SINGLE_LOG', re.compile('\\*[\\W\\w]*?(?=\\*|$)')),
         ('PACKAGE_KEYWORD', re.compile('package[ \\t\\n\\r\\f\\v]*')),
@@ -266,12 +266,12 @@ class SpecfileParser(runtime.Parser):
             return block
         else: # == 'CHANGELOG_KEYWORD'
             block = Block(BlockTypes.SectionTagType)
-            block.keyword = CHANGELOG_KEYWORD
             block.content = []
             CHANGELOG_KEYWORD = self._scan('CHANGELOG_KEYWORD', context=_context)
             while self._peek('SINGLE_LOG', 'PERCENT_SIGN', 'TAG_KEY', 'COMMENT', 'END', context=_context) == 'SINGLE_LOG':
                 changelog = self.changelog(_context)
             block.content.append(changelog)
+            block.keyword = CHANGELOG_KEYWORD
             return block
 
     def macro_undefine(self, _parent=None):
@@ -294,7 +294,6 @@ def parse(rule, text):
 if __name__ == '__main__':
 
     args = parse_arguments()
-    print(args)
 
     parse('goal', open_specfile(args.input))
 

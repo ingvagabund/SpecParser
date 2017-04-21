@@ -54,7 +54,7 @@ def open_specfile(filename):
 #__HeaderDirectives = r'(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|'\
 #r'SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)'
 #__SectionDirectives = r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|'\
-#r'PACKAGE|DOC|CHANGELOG)'
+#r'PACKAGE|CHANGELOG)'
 #__MacroDefDirectives = r'(define|global)'
 #__MacroUndefDirectives = 'undefine'
 #__ConditionBegDirectives = r'(if|ifarch|ifos|ifnarch|ifnos|else)'
@@ -78,8 +78,8 @@ parser SpecfileParser:
     token BEGINNING: r'\s*'
     token TAG_KEY: r'(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\s*|(SOURCE|PATCH)\d*\s*'
     token COLON: "\:"
-    token TAG_VALUE: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\s*(?=\S+\:|%(DESCRIP|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
-    token COMMENT: r'\#.+'
+    token TAG_VALUE: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\s*(?=\S+\:|%(DESCRIP|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token COMMENT: r'\#.+\s*'
     token PERCENT_SIGN: '%'
     token MACRO_DEF_KEYWORD: r'(define|global)\s*'
     token MACRO_UNDEF_KEYWORD: r'undefine\s*'
@@ -88,14 +88,14 @@ parser SpecfileParser:
     token NAME: r'\S+[ \t\n\r\f\v]*'
     token NEWLINE: r'\n'
     token MACRO_NAME: r'\S+\s*'
-    token MACRO_BODY: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\s[\w\W]+?(?=\n\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token MACRO_BODY: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\s[\w\W]+?(?=\n\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
     token CONDITION_BEG_KEYWORD: r'(if|ifarch|ifos|ifnarch|ifnos)\s*'
     token CONDITION_ELSE_KEYWORD: r'else\s*'
     token CONDITION_EXPRESSION: r'.*'
     token CONDITION_BODY: r'[\W\w]*?(%(else|endif))'
     token CONDITION_END_KEYWORD: r'endif\s*'
-    token SECTION_KEY: r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE)[ \t\n\r\f\v]*'
-    token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\s[\w\W]+?(?=\n\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|DOC|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token SECTION_KEY: r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \t\r\f\v]*'
+    token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
     token CHANGELOG_KEYWORD: r'changelog\s*'
     token SINGLE_LOG: r'\*[\W\w]*?(?=\*|$)'
     token PACKAGE_KEYWORD: r'package[ \t\n\r\f\v]*'
@@ -196,9 +196,9 @@ parser SpecfileParser:
                                                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                                                                         {{ return block }}
                         |                                               {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.keyword = CHANGELOG_KEYWORD }}
                                                                         {{ block.content = [] }}
                             CHANGELOG_KEYWORD changelog*                {{ block.content.append(changelog) }}
+                                                                        {{ block.keyword = CHANGELOG_KEYWORD }}
                                                                         {{ return block }}
 
 
