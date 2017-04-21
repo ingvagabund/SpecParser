@@ -90,7 +90,7 @@ class SpecfileParserScanner(runtime.Scanner):
         ('MACRO_UNDEF_KEYWORD', re.compile('undefine\\s*')),
         ('DASH', re.compile('\\-')),
         ('PARAMETERS', re.compile('\\S+[ \\t\\r\\f\\v]*')),
-        ('NAME', re.compile('\\S+[ \\t\\n\\r\\f\\v]*')),
+        ('NAME', re.compile('(?!\\-)\\S+[ \\t\\r\\f\\v]*')),
         ('NEWLINE', re.compile('\\n')),
         ('MACRO_NAME', re.compile('\\S+\\s*')),
         ('MACRO_BODY', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\\s[\\w\\W]+?(?=\\n\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),

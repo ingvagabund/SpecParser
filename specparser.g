@@ -85,7 +85,7 @@ parser SpecfileParser:
     token MACRO_UNDEF_KEYWORD: r'undefine\s*'
     token DASH: r'\-'
     token PARAMETERS: r'\S+[ \t\r\f\v]*'
-    token NAME: r'\S+[ \t\n\r\f\v]*'
+    token NAME: r'(?!\-)\S+[ \t\r\f\v]*'
     token NEWLINE: r'\n'
     token MACRO_NAME: r'\S+\s*'
     token MACRO_BODY: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\s[\w\W]+?(?=\n\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
