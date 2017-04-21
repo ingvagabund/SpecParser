@@ -52,9 +52,9 @@ def open_specfile(filename):
 
 
 #__HeaderDirectives = r'(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|'\
-#r'SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)'
+#r'SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)'
 #__SectionDirectives = r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|'\
-#r'PACKAGE|CHANGELOG)'
+#r'PACKAGE|CHANGELOG|PRE)'
 #__MacroDefDirectives = r'(define|global)'
 #__MacroUndefDirectives = 'undefine'
 #__ConditionBegDirectives = r'(if|ifarch|ifos|ifnarch|ifnos|else)'
@@ -62,12 +62,12 @@ def open_specfile(filename):
 
 
 #__match_tag_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
-#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ').+?(?=\n\S+\:|%' + \
+#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ').+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%' + \
 #self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
 
 
 #__match_section_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
-#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ')\s[\w\W]+?(?=\n\S+\:|%' + \
+#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ')\s[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%' + \
 #self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
 
 
@@ -76,9 +76,9 @@ parser SpecfileParser:
 
     token END: "$"
     token BEGINNING: r'\s*'
-    token TAG_KEY: r'(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\s*|(SOURCE|PATCH)\d*\s*'
+    token TAG_KEY: r'(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\s*|(SOURCE|PATCH)\d*\s*'
     token COLON: "\:"
-    token TAG_VALUE: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\s*(?=\S+\:|%(DESCRIP|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token TAG_VALUE: r'.*\s*'
     token COMMENT: r'\#.+\s*'
     token PERCENT_SIGN: '%'
     token DASH: r'\-'
@@ -87,18 +87,25 @@ parser SpecfileParser:
     token NEWLINE: r'\n'
     token MACRO_DEF_KEYWORD: r'(define|global)\s*'
     token MACRO_UNDEF_KEYWORD: r'undefine\s*'
-    token MACRO_NAME: r'\S+\s*'
-    token MACRO_BODY: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token MACRO_NAME: r'\S+?(?=[\(|\:|\s])\s*'
+    token MACRO_OPTIONS: r'\(.*?\)\s*'
+    token MACRO_BODY: r'(?!\().*\s*'
+    token MACRO_CONDITION_BODY: r'(?!\().*(?=\}\s*)'
+    token LEFT_PARENTHESIS: r'\{'
+    token RIGHT_PARENTHESIS: r'\}'
+    token EXCLAMATION_MARK: r'\!'
+    token QUESTION_MARK: r'\?'
+    token WHITESPACE: r'[ \t\n\r\f\v]*'
     token CONDITION_BEG_KEYWORD: r'(if|ifarch|ifos|ifnarch|ifnos)\s*'
     token CONDITION_ELSE_KEYWORD: r'else\s*'
-    token CONDITION_EXPRESSION: r'.*'
-    token CONDITION_BODY: r'[\W\w]*?(%(else|endif))'
+    token CONDITION_EXPRESSION: r'.*\s*'
+    token CONDITION_BODY: r'[\W\w]*?(?=%(else|endif))'
     token CONDITION_END_KEYWORD: r'endif\s*'
     token SECTION_KEY: r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \t\r\f\v]*'
-    token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\{!\?|%\{\?|$)'
     token CHANGELOG_KEYWORD: r'changelog\s*'
     token SINGLE_LOG: r'\*[\W\w]*?(?=\*|$)'
-    token PACKAGE_KEYWORD: r'package[ \t\n\r\f\v]*'
+    token PACKAGE_KEYWORD: r'package[ \t\r\f\v]*'
     token PACKAGE_CONTENT: '(?i)[\W\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE)|$)'
 
 
@@ -137,13 +144,28 @@ parser SpecfileParser:
                     |  macro_definition                 {{ Specfile.block_list.append(macro_definition) }}
                     |  macro_undefine                   {{ Specfile.block_list.append(macro_undefine) }}
                     |  condition_definition             {{ Specfile.block_list.append(condition_definition) }}
+                    |  LEFT_PARENTHESIS macro_condition RIGHT_PARENTHESIS WHITESPACE
+                                                        {{ macro_condition.ending = WHITESPACE }}
+                                                        {{ Specfile.block_list.append(macro_condition) }}
 
 
 
-    rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_BODY      {{ block = Block(BlockTypes.MacroDefinitionType) }}
+    rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_OPTIONS? MACRO_BODY      
+                                                                        {{ block = Block(BlockTypes.MacroDefinitionType) }}
                                                                         {{ block.name = MACRO_NAME }}
                                                                         {{ block.keyword = MACRO_DEF_KEYWORD }}
+                                                                        {{ if 'MACRO_OPTIONS' in locals(): block.options = MACRO_OPTIONS }}
+                                                                        {{ else: block.options = None }}
                                                                         {{ block.body = MACRO_BODY }}
+                                                                        {{ return block }}
+
+
+    rule macro_condition:   EXCLAMATION_MARK? QUESTION_MARK MACRO_NAME COLON MACRO_CONDITION_BODY
+                                                                        {{ block = Block(BlockTypes.MacroConditionType) }}
+                                                                        {{ block.name = MACRO_NAME }}
+                                                                        {{ if 'EXCLAMATION_MARK' in locals(): block.condition = EXCLAMATION_MARK + QUESTION_MARK }}
+                                                                        {{ else: block.condition = QUESTION_MARK }}
+                                                                        {{ block.content = MACRO_CONDITION_BODY }}
                                                                         {{ return block }}
 
 
@@ -159,14 +181,14 @@ parser SpecfileParser:
 
 
     rule condition_definition:          {{ count = len(Specfile.block_list) }} 
-                        CONDITION_BEG_KEYWORD CONDITION_EXPRESSION CONDITION_BODY (PERCENT_SIGN CONDITION_ELSE_KEYWORD condition_else_body)? PERCENT_SIGN CONDITION_END_KEYWORD
+                        CONDITION_BEG_KEYWORD CONDITION_EXPRESSION CONDITION_BODY PERCENT_SIGN (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN)? CONDITION_END_KEYWORD
                                         {{ block = Block(BlockTypes.ConditionType) }}
                                         {{ block.keyword = CONDITION_BEG_KEYWORD }}
                                         {{ block.expression = CONDITION_EXPRESSION }}
                                         {{ block.end_keyword = CONDITION_END_KEYWORD }}
                                         {{ parse('spec_file', CONDITION_BODY) }}
                                         {{ block.content = Specfile.block_list[count:] }}
-                                        {{ Specfile.block_list = Specfile.block_list[count:] }}
+                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
                                         {{ if 'CONDITION_ELSE_KEYWORD' in locals(): block.else_keyword = CONDITION_ELSE_KEYWORD }}
                                         {{ else: block.else_keyword = None }}
                                         {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body = Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[count:] }}
@@ -182,15 +204,20 @@ parser SpecfileParser:
     rule section:           SECTION_KEY (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT
                                                                         {{ block = Block(BlockTypes.SectionTagType) }}
                                                                         {{ block.key = SECTION_KEY }}
-                                                                        {{ block.content = SECTION_CONTENT }}
+                                                                        {{ block.content = NEWLINE + SECTION_CONTENT }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
                                                                         {{ else: block.parameters = None }}
                                                                         {{ if 'NAME' in locals(): block.name = NAME }}
                                                                         {{ else: block.name = None }}
                                                                         {{ return block }}
                         |                                               {{ count = len(Specfile.block_list) }}
-                            PACKAGE_KEYWORD PACKAGE_CONTENT             {{ block = Block(BlockTypes.SectionTagType) }}
+                            PACKAGE_KEYWORD (DASH PARAMETERS)? NAME? NEWLINE PACKAGE_CONTENT
+                                                                        {{ block = Block(BlockTypes.SectionTagType) }}
                                                                         {{ block.key = PACKAGE_KEYWORD }}
+                                                                        {{ if 'NAME' in locals(): block.name = NAME + NEWLINE }}
+                                                                        {{ else: block.name = NEWLINE }}
+                                                                        {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
+                                                                        {{ else: block.parameters = None }}                                                                        
                                                                         {{ parse('spec_file', PACKAGE_CONTENT) }}
                                                                         {{ block.content = Specfile.block_list[count:] }}
                                                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
