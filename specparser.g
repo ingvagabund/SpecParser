@@ -81,14 +81,14 @@ parser SpecfileParser:
     token TAG_VALUE: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\s*(?=\S+\:|%(DESCRIP|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
     token COMMENT: r'\#.+\s*'
     token PERCENT_SIGN: '%'
-    token MACRO_DEF_KEYWORD: r'(define|global)\s*'
-    token MACRO_UNDEF_KEYWORD: r'undefine\s*'
     token DASH: r'\-'
     token PARAMETERS: r'\S+[ \t\r\f\v]*'
     token NAME: r'(?!\-)\S+[ \t\r\f\v]*'
     token NEWLINE: r'\n'
+    token MACRO_DEF_KEYWORD: r'(define|global)\s*'
+    token MACRO_UNDEF_KEYWORD: r'undefine\s*'
     token MACRO_NAME: r'\S+\s*'
-    token MACRO_BODY: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\s[\w\W]+?(?=\n\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
+    token MACRO_BODY: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=\S+\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)'
     token CONDITION_BEG_KEYWORD: r'(if|ifarch|ifos|ifnarch|ifnos)\s*'
     token CONDITION_ELSE_KEYWORD: r'else\s*'
     token CONDITION_EXPRESSION: r'.*'
@@ -140,7 +140,7 @@ parser SpecfileParser:
 
 
 
-    rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_BODY      {{ block = Block(MacroDefinitionType) }}
+    rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_BODY      {{ block = Block(BlockTypes.MacroDefinitionType) }}
                                                                         {{ block.name = MACRO_NAME }}
                                                                         {{ block.keyword = MACRO_DEF_KEYWORD }}
                                                                         {{ block.body = MACRO_BODY }}

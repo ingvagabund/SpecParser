@@ -86,14 +86,14 @@ class SpecfileParserScanner(runtime.Scanner):
         ('TAG_VALUE', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)).+\\s*(?=\\S+\\:|%(DESCRIP|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
         ('COMMENT', re.compile('\\#.+\\s*')),
         ('PERCENT_SIGN', re.compile('%')),
-        ('MACRO_DEF_KEYWORD', re.compile('(define|global)\\s*')),
-        ('MACRO_UNDEF_KEYWORD', re.compile('undefine\\s*')),
         ('DASH', re.compile('\\-')),
         ('PARAMETERS', re.compile('\\S+[ \\t\\r\\f\\v]*')),
         ('NAME', re.compile('(?!\\-)\\S+[ \\t\\r\\f\\v]*')),
         ('NEWLINE', re.compile('\\n')),
+        ('MACRO_DEF_KEYWORD', re.compile('(define|global)\\s*')),
+        ('MACRO_UNDEF_KEYWORD', re.compile('undefine\\s*')),
         ('MACRO_NAME', re.compile('\\S+\\s*')),
-        ('MACRO_BODY', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))\\s[\\w\\W]+?(?=\\n\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
+        ('MACRO_BODY', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\\w\\W]+?(?=\\S+\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|$)')),
         ('CONDITION_BEG_KEYWORD', re.compile('(if|ifarch|ifos|ifnarch|ifnos)\\s*')),
         ('CONDITION_ELSE_KEYWORD', re.compile('else\\s*')),
         ('CONDITION_EXPRESSION', re.compile('.*')),
@@ -187,7 +187,7 @@ class SpecfileParser(runtime.Parser):
         MACRO_DEF_KEYWORD = self._scan('MACRO_DEF_KEYWORD', context=_context)
         MACRO_NAME = self._scan('MACRO_NAME', context=_context)
         MACRO_BODY = self._scan('MACRO_BODY', context=_context)
-        block = Block(MacroDefinitionType)
+        block = Block(BlockTypes.MacroDefinitionType)
         block.name = MACRO_NAME
         block.keyword = MACRO_DEF_KEYWORD
         block.body = MACRO_BODY
