@@ -166,9 +166,10 @@ parser SpecfileParser:
                                         {{ block.expression = CONDITION_EXPRESSION }}
                                         {{ block.content = [] }}
                                         {{ content = CONDITION_BODY }}
-                        ((condition_definition 
+                        ((condition_definition              {{ block.content.append(condition_definition) }}
                         | (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN (condition_else_inner else_body PERCENT_SIGN)?) 
-                        | body ) PERCENT_SIGN?)*
+                        | body                              {{ content += body }} 
+                        ) PERCENT_SIGN?)*
                         CONDITION_END_KEYWORD
                                         {{ if 'condition_else_inner' in locals(): block.content.append(condition_else_inner) }}
                                         {{ block.end_keyword = CONDITION_END_KEYWORD }}
@@ -226,7 +227,9 @@ parser SpecfileParser:
                                                                         {{ return block }}
                         |                                               {{ block = Block(BlockTypes.SectionTagType) }}
                                                                         {{ block.content = [] }}
-                            CHANGELOG_KEYWORD changelog*                {{ block.content.append(changelog) }}
+                            CHANGELOG_KEYWORD (
+                                changelog                               {{ block.content.append(changelog) }}
+                            )*
                                                                         {{ block.keyword = CHANGELOG_KEYWORD }}
                                                                         {{ return block }}
 
