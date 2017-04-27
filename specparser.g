@@ -165,25 +165,27 @@ parser SpecfileParser:
                                         {{ block.keyword = CONDITION_BEG_KEYWORD }}
                                         {{ block.expression = CONDITION_EXPRESSION }}
                                         {{ block.content = [] }}
-                                        {{ content = CONDITION_BODY }}
-                        ((condition_definition              {{ block.content.append(condition_definition) }}
-                        | (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN (condition_else_inner else_body PERCENT_SIGN)?) 
-                        | body                              {{ content += body }} 
-                        ) PERCENT_SIGN?)*
-                        CONDITION_END_KEYWORD
-                                        {{ if 'condition_else_inner' in locals(): block.content.append(condition_else_inner) }}
-                                        {{ block.end_keyword = CONDITION_END_KEYWORD }}
                                         {{ count = len(Specfile.block_list) }} 
-                                        {{ parse('spec_file', content) }}
-                                        {{ block.content += Specfile.block_list[count:] }}
+                                        {{ parse('spec_file', CONDITION_BODY) }}
+                                        {{ if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
+                                        {{ block.else_body = [] }}
+                        ((condition_definition              {{ if condition_definition not in block.content: block.content.append(condition_definition) }}
+                        | body          {{ count = len(Specfile.block_list) }} 
+                                        {{ parse('spec_file', body) }}
+                                        {{ if Specfile.block_list[count:] not in block.else_body: block.else_body += Specfile.block_list[count:] }}
+                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
+                        ) PERCENT_SIGN?)*
+                        (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN
+                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del condition_else_body }} 
+                        ((condition_else_inner | else_body)
+                                        {{ if 'else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del else_body }}
+                                        {{ if 'condition_else_inner' in locals() and condition_else_inner not in block.else_body: block.else_body.append(condition_else_inner); del condition_else_inner }}
+                        PERCENT_SIGN?)*)?
+                        CONDITION_END_KEYWORD
+                                        {{ block.end_keyword = CONDITION_END_KEYWORD }}
                                         {{ if 'CONDITION_ELSE_KEYWORD' in locals(): block.else_keyword = CONDITION_ELSE_KEYWORD }}
                                         {{ else: block.else_keyword = None }}
-                                        {{ to_parse = "" }}
-                                        {{ if 'condition_else_body' in locals(): to_parse += condition_else_body }} 
-                                        {{ if 'else_body' in locals(): to_parse += else_body }}
-                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', to_parse); block.else_body = Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count] }}
-                                        {{ else: block.else_body = None }}
                                         {{ return block }}
 
 

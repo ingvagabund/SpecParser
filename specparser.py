@@ -228,39 +228,43 @@ class SpecfileParser(runtime.Parser):
         block.keyword = CONDITION_BEG_KEYWORD
         block.expression = CONDITION_EXPRESSION
         block.content = []
-        content = CONDITION_BODY
-        while self._peek('CONDITION_END_KEYWORD', 'CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context) != 'CONDITION_END_KEYWORD':
-            _token = self._peek('CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
+        count = len(Specfile.block_list)
+        parse('spec_file', CONDITION_BODY)
+        if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:]
+        Specfile.block_list = Specfile.block_list[:count]
+        block.else_body = []
+        while self._peek('CONDITION_ELSE_KEYWORD', 'CONDITION_END_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context) in ['CONDITION_BEG_KEYWORD', 'CONDITION_BODY']:
+            _token = self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
             if _token == 'CONDITION_BEG_KEYWORD':
                 condition_definition = self.condition_definition(_context)
-                block.content.append(condition_definition)
-            elif _token == 'CONDITION_ELSE_KEYWORD':
-                CONDITION_ELSE_KEYWORD = self._scan('CONDITION_ELSE_KEYWORD', context=_context)
-                condition_else_body = self.condition_else_body(_context)
-                PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
-                if self._peek('CONDITION_BEG_KEYWORD', 'PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_END_KEYWORD', 'CONDITION_BODY', context=_context) == 'CONDITION_BEG_KEYWORD':
-                    condition_else_inner = self.condition_else_inner(_context)
-                    else_body = self.else_body(_context)
-                    PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
+                if condition_definition not in block.content: block.content.append(condition_definition)
             else: # == 'CONDITION_BODY'
                 body = self.body(_context)
-                content += body
-            if self._peek('PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_END_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context) == 'PERCENT_SIGN':
+                count = len(Specfile.block_list)
+                parse('spec_file', body)
+                if Specfile.block_list[count:] not in block.else_body: block.else_body += Specfile.block_list[count:]
+                Specfile.block_list = Specfile.block_list[:count]
+            if self._peek('PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
                 PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
+        if self._peek('CONDITION_ELSE_KEYWORD', 'CONDITION_END_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context) == 'CONDITION_ELSE_KEYWORD':
+            CONDITION_ELSE_KEYWORD = self._scan('CONDITION_ELSE_KEYWORD', context=_context)
+            condition_else_body = self.condition_else_body(_context)
+            PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
+            if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del condition_else_body
+            while self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) != 'CONDITION_END_KEYWORD':
+                _token = self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
+                if _token == 'CONDITION_BEG_KEYWORD':
+                    condition_else_inner = self.condition_else_inner(_context)
+                else: # == 'CONDITION_BODY'
+                    else_body = self.else_body(_context)
+                if 'else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del else_body
+                if 'condition_else_inner' in locals() and condition_else_inner not in block.else_body: block.else_body.append(condition_else_inner); del condition_else_inner
+                if self._peek('PERCENT_SIGN', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
+                    PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
         CONDITION_END_KEYWORD = self._scan('CONDITION_END_KEYWORD', context=_context)
-        if 'condition_else_inner' in locals(): block.content.append(condition_else_inner)
         block.end_keyword = CONDITION_END_KEYWORD
-        count = len(Specfile.block_list)
-        parse('spec_file', content)
-        block.content += Specfile.block_list[count:]
-        Specfile.block_list = Specfile.block_list[:count]
         if 'CONDITION_ELSE_KEYWORD' in locals(): block.else_keyword = CONDITION_ELSE_KEYWORD
         else: block.else_keyword = None
-        to_parse = ""
-        if 'condition_else_body' in locals(): to_parse += condition_else_body
-        if 'else_body' in locals(): to_parse += else_body
-        if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', to_parse); block.else_body = Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]
-        else: block.else_body = None
         return block
 
     def condition_else_body(self, _parent=None):
