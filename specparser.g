@@ -173,7 +173,7 @@ parser SpecfileParser:
                         ((condition_definition              {{ if condition_definition not in block.content: block.content.append(condition_definition) }}
                         | body          {{ count = len(Specfile.block_list) }} 
                                         {{ parse('spec_file', body) }}
-                                        {{ if Specfile.block_list[count:] not in block.else_body: block.else_body += Specfile.block_list[count:] }}
+                                        {{ if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                         ) PERCENT_SIGN?)*
                         (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN

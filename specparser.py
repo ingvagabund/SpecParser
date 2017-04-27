@@ -242,7 +242,7 @@ class SpecfileParser(runtime.Parser):
                 body = self.body(_context)
                 count = len(Specfile.block_list)
                 parse('spec_file', body)
-                if Specfile.block_list[count:] not in block.else_body: block.else_body += Specfile.block_list[count:]
+                if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:]
                 Specfile.block_list = Specfile.block_list[:count]
             if self._peek('PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
                 PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
