@@ -51,26 +51,6 @@ def open_specfile(filename):
         sys.exit(1)
 
 
-#__HeaderDirectives = r'(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|'\
-#r'SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)'
-#__SectionDirectives = r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|'\
-#r'PACKAGE|CHANGELOG|PRE)'
-#__MacroDefDirectives = r'(define|global)'
-#__MacroUndefDirectives = 'undefine'
-#__ConditionBegDirectives = r'(if|ifarch|ifos|ifnarch|ifnos|else)'
-#__ConditionEndDirectives = 'endif'
-
-
-#__match_tag_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
-#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ').+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%' + \
-#self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
-
-
-#__match_section_content = r'(?i)(?!' + self.__HeaderDirectives + '\:|%' + self.__SectionDirectives + \
-#r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + ')\s[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%' + \
-#self.__SectionDirectives + r'|%' + self.__MacroDirectives + '|%' + self.__ConditionDirectives + '|$)'
-
-
 %%
 parser SpecfileParser:
 
@@ -99,7 +79,7 @@ parser SpecfileParser:
     token CONDITION_BEG_KEYWORD: r'(if|ifarch|ifos|ifnarch|ifnos)\s*'
     token CONDITION_ELSE_KEYWORD: r'else\s*'
     token CONDITION_EXPRESSION: r'.*\s*'
-    token CONDITION_BODY: r'[\W\w]*?(?=%(else|endif))'
+    token CONDITION_BODY: r'(?!(endif|if|else))[\W\w]*?(?=%(else|endif|if))'
     token CONDITION_END_KEYWORD: r'endif\s*'
     token SECTION_KEY: r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \t\r\f\v]*'
     token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\{!\?|%\{\?|$)'
@@ -180,24 +160,46 @@ parser SpecfileParser:
 
 
 
-    rule condition_definition:          {{ count = len(Specfile.block_list) }} 
-                        CONDITION_BEG_KEYWORD CONDITION_EXPRESSION CONDITION_BODY PERCENT_SIGN (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN)? CONDITION_END_KEYWORD
+    rule condition_definition:  CONDITION_BEG_KEYWORD CONDITION_EXPRESSION CONDITION_BODY PERCENT_SIGN
                                         {{ block = Block(BlockTypes.ConditionType) }}
                                         {{ block.keyword = CONDITION_BEG_KEYWORD }}
                                         {{ block.expression = CONDITION_EXPRESSION }}
+                                        {{ block.content = [] }}
+                                        {{ content = CONDITION_BODY }}
+                        ((condition_definition 
+                        | (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN (condition_else_inner else_body PERCENT_SIGN)?) 
+                        | body ) PERCENT_SIGN?)*
+                        CONDITION_END_KEYWORD
+                                        {{ if 'condition_else_inner' in locals(): block.content.append(condition_else_inner) }}
                                         {{ block.end_keyword = CONDITION_END_KEYWORD }}
-                                        {{ parse('spec_file', CONDITION_BODY) }}
-                                        {{ block.content = Specfile.block_list[count:] }}
+                                        {{ count = len(Specfile.block_list) }} 
+                                        {{ parse('spec_file', content) }}
+                                        {{ block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                                         {{ if 'CONDITION_ELSE_KEYWORD' in locals(): block.else_keyword = CONDITION_ELSE_KEYWORD }}
                                         {{ else: block.else_keyword = None }}
-                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body = Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[count:] }}
+                                        {{ to_parse = "" }}
+                                        {{ if 'condition_else_body' in locals(): to_parse += condition_else_body }} 
+                                        {{ if 'else_body' in locals(): to_parse += else_body }}
+                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', to_parse); block.else_body = Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count] }}
                                         {{ else: block.else_body = None }}
                                         {{ return block }}
 
 
 
-    rule condition_else_body:       CONDITION_BODY
+    rule condition_else_body:       CONDITION_BODY                      {{ return CONDITION_BODY }}                     
+
+
+
+    rule condition_else_inner:      condition_definition                {{ return condition_definition }}
+
+
+
+    rule else_body:                 CONDITION_BODY                      {{ return CONDITION_BODY }}
+
+
+
+    rule body:                      CONDITION_BODY                      {{ return CONDITION_BODY }}
 
 
 
@@ -243,4 +245,4 @@ if __name__ == '__main__':
 
     parse('goal', open_specfile(args.input))
 
-    print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True, indent=4))
+    print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
