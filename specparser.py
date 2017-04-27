@@ -61,7 +61,7 @@ class SpecfileParserScanner(runtime.Scanner):
     patterns = [
         ('END', re.compile('$')),
         ('BEGINNING', re.compile('\\s*')),
-        ('TAG_KEY', re.compile('(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\\s*|(SOURCE|PATCH)\\d*\\s*')),
+        ('TAG_KEY', re.compile('(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES(\\(\\S+\\))?|REQUIRES(\\(\\S+\\))?|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\s*|(SOURCE|PATCH)\\d*\\s*')),
         ('COLON', re.compile('\\:')),
         ('TAG_VALUE', re.compile('.*\\s*')),
         ('COMMENT', re.compile('\\#.+\\s*')),
@@ -87,7 +87,7 @@ class SpecfileParserScanner(runtime.Scanner):
         ('CONDITION_BODY', re.compile('(?!(endif|if|else))[\\W\\w]*?(?=%(else|endif|if))')),
         ('CONDITION_END_KEYWORD', re.compile('endif\\s*')),
         ('SECTION_KEY', re.compile('(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \\t\\r\\f\\v]*')),
-        ('SECTION_CONTENT', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\\w\\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\\{!\\?|%\\{\\?|$)')),
+        ('SECTION_CONTENT', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\\w\\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\\{!\\?|%\\{\\?|$)')),
         ('CHANGELOG_KEYWORD', re.compile('changelog\\s*')),
         ('SINGLE_LOG', re.compile('\\*[\\W\\w]*?(?=\\*|$)')),
         ('PACKAGE_KEYWORD', re.compile('package[ \\t\\r\\f\\v]*')),
@@ -139,7 +139,9 @@ class SpecfileParser(runtime.Parser):
         COLON = self._scan('COLON', context=_context)
         TAG_VALUE = self._scan('TAG_VALUE', context=_context)
         block = Block(BlockTypes.HeaderTagType)
-        block.key = TAG_KEY
+        if TAG_KEY.find('(') == -1: block.key = TAG_KEY; block.option = None 
+        else: block.key = TAG_KEY[:TAG_KEY.find('(')]; block.option = TAG_KEY[TAG_KEY.find('(')+1:-1]
+        print("KEY: " + str(block.key) + " OPTION: " + str(block.option))
         block.content = TAG_VALUE
         return block
 
