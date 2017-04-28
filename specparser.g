@@ -56,7 +56,7 @@ parser SpecfileParser:
 
     token END: "$"
     token BEGINNING: r'\s*'
-    token TAG_KEY: r'(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES(\(\S+\))?|REQUIRES(\(\S+\))?|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\s*|(SOURCE|PATCH)\d*\s*'
+    token TAG_KEY: r'(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES(\(\S+\))?|REQUIRES(\(\S+\))?|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES|PREP|PRE|PREUN|POST|POSTUN)\s*|(SOURCE|PATCH)\d*\s*'
     token COLON: "\:"
     token TAG_VALUE: r'.*\s*'
     token COMMENT: r'\#.+\s*'
@@ -81,12 +81,14 @@ parser SpecfileParser:
     token CONDITION_EXPRESSION: r'.*\s*'
     token CONDITION_BODY: r'(?!(endif|if|else))[\W\w]*?(?=%(else|endif|if))'
     token CONDITION_END_KEYWORD: r'endif\s*'
-    token SECTION_KEY: r'(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \t\r\f\v]*'
-    token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\{!\?|%\{\?|$)'
+    token SECTION_KEY: r'(?i)(DESCRIPTION|PREP|PREUN|PRE|POSTUN|POST|FILES)[ \t\r\f\v]*'
+    token SECTION_KEY_NOPARSE: r'(?i)(BUILD|CHECK|INSTALL)[ \t\r\f\v]*'
+    token SECTION_CONTENT: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\{!\?|%\{\?|$)'
+    token SECTION_CONTENT_NOPARSE: r'(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN))[\w\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN)|$)'
     token CHANGELOG_KEYWORD: r'changelog\s*'
     token SINGLE_LOG: r'\*[\W\w]*?(?=\*|$)'
     token PACKAGE_KEYWORD: r'package[ \t\r\f\v]*'
-    token PACKAGE_CONTENT: '(?i)[\W\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE)|$)'
+    token PACKAGE_CONTENT: '(?i)[\W\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN)|$)'
 
 
     rule goal:         begin spec_file END
@@ -171,10 +173,13 @@ parser SpecfileParser:
                                         {{ if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                                         {{ block.else_body = [] }}
-                        ((condition_definition              {{ if condition_definition not in block.content: block.content.append(condition_definition) }}
+                        ((condition_definition              
+                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition) }}
+                                        {{ elif condition_definition not in block.content: block.content.append(condition_definition) }}
                         | body          {{ count = len(Specfile.block_list) }} 
                                         {{ parse('spec_file', body) }}
-                                        {{ if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
+                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:] }}
+                                        {{ elif Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                         ) PERCENT_SIGN?)*
                         (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN
@@ -207,13 +212,26 @@ parser SpecfileParser:
 
 
 
-    rule section:           SECTION_KEY (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT
+    rule section:           SECTION_KEY option? (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT
                                                                         {{ block = Block(BlockTypes.SectionTagType) }}
                                                                         {{ block.key = SECTION_KEY }}
                                                                         {{ block.content = NEWLINE + SECTION_CONTENT }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
                                                                         {{ else: block.parameters = None }}
-                                                                        {{ if 'NAME' in locals(): block.name = NAME }}
+                                                                        {{ if 'NAME' in locals(): block.subname = NAME }}
+                                                                        {{ else: block.subname = None }}
+                                                                        {{ if 'option' in locals(): block.name = option }}
+                                                                        {{ else: block.name = None }}
+                                                                        {{ return block }}
+                        |   SECTION_KEY_NOPARSE option?  (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT_NOPARSE
+                                                                        {{ block = Block(BlockTypes.SectionTagType) }}
+                                                                        {{ block.key = SECTION_KEY_NOPARSE }}
+                                                                        {{ block.content = NEWLINE + SECTION_CONTENT_NOPARSE }}
+                                                                        {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
+                                                                        {{ else: block.parameters = None }}
+                                                                        {{ if 'NAME' in locals(): block.subname = NAME }}
+                                                                        {{ else: block.subname = None }}
+                                                                        {{ if 'option' in locals(): block.name = option }}
                                                                         {{ else: block.name = None }}
                                                                         {{ return block }}
                         |                                               {{ count = len(Specfile.block_list) }}
@@ -235,6 +253,10 @@ parser SpecfileParser:
                             )*
                                                                         {{ block.keyword = CHANGELOG_KEYWORD }}
                                                                         {{ return block }}
+
+
+
+    rule option:            NAME                                        {{ return NAME }}
 
 
 

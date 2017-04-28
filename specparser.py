@@ -61,7 +61,7 @@ class SpecfileParserScanner(runtime.Scanner):
     patterns = [
         ('END', re.compile('$')),
         ('BEGINNING', re.compile('\\s*')),
-        ('TAG_KEY', re.compile('(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES(\\(\\S+\\))?|REQUIRES(\\(\\S+\\))?|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\s*|(SOURCE|PATCH)\\d*\\s*')),
+        ('TAG_KEY', re.compile('(?i)(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|BUILDREQUIRES(\\(\\S+\\))?|REQUIRES(\\(\\S+\\))?|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES|PREP|PRE|PREUN|POST|POSTUN)\\s*|(SOURCE|PATCH)\\d*\\s*')),
         ('COLON', re.compile('\\:')),
         ('TAG_VALUE', re.compile('.*\\s*')),
         ('COMMENT', re.compile('\\#.+\\s*')),
@@ -86,12 +86,14 @@ class SpecfileParserScanner(runtime.Scanner):
         ('CONDITION_EXPRESSION', re.compile('.*\\s*')),
         ('CONDITION_BODY', re.compile('(?!(endif|if|else))[\\W\\w]*?(?=%(else|endif|if))')),
         ('CONDITION_END_KEYWORD', re.compile('endif\\s*')),
-        ('SECTION_KEY', re.compile('(?i)(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|PRE|FILES)[ \\t\\r\\f\\v]*')),
-        ('SECTION_CONTENT', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\\w\\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\\{!\\?|%\\{\\?|$)')),
+        ('SECTION_KEY', re.compile('(?i)(DESCRIPTION|PREP|PREUN|PRE|POSTUN|POST|FILES)[ \\t\\r\\f\\v]*')),
+        ('SECTION_KEY_NOPARSE', re.compile('(?i)(BUILD|CHECK|INSTALL)[ \\t\\r\\f\\v]*')),
+        ('SECTION_CONTENT', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif))[\\w\\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN)|%(define|global|undefine)|%(if|ifarch|ifos|ifnarch|ifnos|else|endif)|%\\{!\\?|%\\{\\?|$)')),
+        ('SECTION_CONTENT_NOPARSE', re.compile('(?i)(?!(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN))[\\w\\W]+?(?=(NAME|VERSION|RELEASE|SUMMARY|LICENSE|URL|SOURCE|PATCH|BUILDREQUIRES|REQUIRES|PREFIX|GROUP|BUILDROOT|EXCLUDEARCH|EXCLUSIVEARCH|CONFLICTS|BUILDARCH|PROVIDES)\\:|%(DESCRIPTION|PREP|BUILD|CHECK|INSTALL|FILES|PACKAGE|CHANGELOG|PRE|PREUN|POST|POSTUN)|$)')),
         ('CHANGELOG_KEYWORD', re.compile('changelog\\s*')),
         ('SINGLE_LOG', re.compile('\\*[\\W\\w]*?(?=\\*|$)')),
         ('PACKAGE_KEYWORD', re.compile('package[ \\t\\r\\f\\v]*')),
-        ('PACKAGE_CONTENT', re.compile('(?i)[\\W\\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE)|$)')),
+        ('PACKAGE_CONTENT', re.compile('(?i)[\\W\\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN)|$)')),
     ]
     def __init__(self, str,*args,**kw):
         runtime.Scanner.__init__(self,None,{},str,*args,**kw)
@@ -139,9 +141,8 @@ class SpecfileParser(runtime.Parser):
         COLON = self._scan('COLON', context=_context)
         TAG_VALUE = self._scan('TAG_VALUE', context=_context)
         block = Block(BlockTypes.HeaderTagType)
-        if TAG_KEY.find('(') == -1: block.key = TAG_KEY; block.option = None 
+        if TAG_KEY.find('(') == -1: block.key = TAG_KEY; block.option = None
         else: block.key = TAG_KEY[:TAG_KEY.find('(')]; block.option = TAG_KEY[TAG_KEY.find('(')+1:-1]
-        print("KEY: " + str(block.key) + " OPTION: " + str(block.option))
         block.content = TAG_VALUE
         return block
 
@@ -157,7 +158,7 @@ class SpecfileParser(runtime.Parser):
 
     def keyword(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'keyword', [])
-        _token = self._peek('LEFT_PARENTHESIS', 'SECTION_KEY', 'PACKAGE_KEYWORD', 'CHANGELOG_KEYWORD', 'MACRO_DEF_KEYWORD', 'MACRO_UNDEF_KEYWORD', 'CONDITION_BEG_KEYWORD', context=_context)
+        _token = self._peek('LEFT_PARENTHESIS', 'SECTION_KEY', 'SECTION_KEY_NOPARSE', 'PACKAGE_KEYWORD', 'CHANGELOG_KEYWORD', 'MACRO_DEF_KEYWORD', 'MACRO_UNDEF_KEYWORD', 'CONDITION_BEG_KEYWORD', context=_context)
         if _token not in ['LEFT_PARENTHESIS', 'MACRO_DEF_KEYWORD', 'MACRO_UNDEF_KEYWORD', 'CONDITION_BEG_KEYWORD']:
             section = self.section(_context)
             Specfile.block_list.append(section)
@@ -239,12 +240,14 @@ class SpecfileParser(runtime.Parser):
             _token = self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
             if _token == 'CONDITION_BEG_KEYWORD':
                 condition_definition = self.condition_definition(_context)
-                if condition_definition not in block.content: block.content.append(condition_definition)
+                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition)
+                elif condition_definition not in block.content: block.content.append(condition_definition)
             else: # == 'CONDITION_BODY'
                 body = self.body(_context)
                 count = len(Specfile.block_list)
                 parse('spec_file', body)
-                if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:]
+                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:]
+                elif Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:]
                 Specfile.block_list = Specfile.block_list[:count]
             if self._peek('PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
                 PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
@@ -291,9 +294,11 @@ class SpecfileParser(runtime.Parser):
 
     def section(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'section', [])
-        _token = self._peek('SECTION_KEY', 'PACKAGE_KEYWORD', 'CHANGELOG_KEYWORD', context=_context)
+        _token = self._peek('SECTION_KEY', 'SECTION_KEY_NOPARSE', 'PACKAGE_KEYWORD', 'CHANGELOG_KEYWORD', context=_context)
         if _token == 'SECTION_KEY':
             SECTION_KEY = self._scan('SECTION_KEY', context=_context)
+            if self._peek('DASH', 'NAME', 'NEWLINE', context=_context) == 'NAME':
+                option = self.option(_context)
             if self._peek('DASH', 'NAME', 'NEWLINE', context=_context) == 'DASH':
                 DASH = self._scan('DASH', context=_context)
                 PARAMETERS = self._scan('PARAMETERS', context=_context)
@@ -306,7 +311,30 @@ class SpecfileParser(runtime.Parser):
             block.content = NEWLINE + SECTION_CONTENT
             if 'PARAMETERS' in locals(): block.parameters = PARAMETERS
             else: block.parameters = None
-            if 'NAME' in locals(): block.name = NAME
+            if 'NAME' in locals(): block.subname = NAME
+            else: block.subname = None
+            if 'option' in locals(): block.name = option
+            else: block.name = None
+            return block
+        elif _token == 'SECTION_KEY_NOPARSE':
+            SECTION_KEY_NOPARSE = self._scan('SECTION_KEY_NOPARSE', context=_context)
+            if self._peek('DASH', 'NAME', 'NEWLINE', context=_context) == 'NAME':
+                option = self.option(_context)
+            if self._peek('DASH', 'NAME', 'NEWLINE', context=_context) == 'DASH':
+                DASH = self._scan('DASH', context=_context)
+                PARAMETERS = self._scan('PARAMETERS', context=_context)
+            if self._peek('NAME', 'NEWLINE', context=_context) == 'NAME':
+                NAME = self._scan('NAME', context=_context)
+            NEWLINE = self._scan('NEWLINE', context=_context)
+            SECTION_CONTENT_NOPARSE = self._scan('SECTION_CONTENT_NOPARSE', context=_context)
+            block = Block(BlockTypes.SectionTagType)
+            block.key = SECTION_KEY_NOPARSE
+            block.content = NEWLINE + SECTION_CONTENT_NOPARSE
+            if 'PARAMETERS' in locals(): block.parameters = PARAMETERS
+            else: block.parameters = None
+            if 'NAME' in locals(): block.subname = NAME
+            else: block.subname = None
+            if 'option' in locals(): block.name = option
             else: block.name = None
             return block
         elif _token == 'PACKAGE_KEYWORD':
@@ -338,6 +366,11 @@ class SpecfileParser(runtime.Parser):
                 block.content.append(changelog)
             block.keyword = CHANGELOG_KEYWORD
             return block
+
+    def option(self, _parent=None):
+        _context = self.Context(_parent, self._scanner, 'option', [])
+        NAME = self._scan('NAME', context=_context)
+        return NAME
 
     def macro_undefine(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'macro_undefine', [])
