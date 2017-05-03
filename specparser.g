@@ -271,6 +271,9 @@ if __name__ == '__main__':
 
     args = parse_arguments()
 
+    if args.input == None:
+        args.input = raw_input("Enter path to the specfile: ")
+
     parse('goal', open_specfile(args.input))
 
     print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
