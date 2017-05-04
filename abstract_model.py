@@ -12,7 +12,7 @@ Specfile.beginning = json_containing_parsed_spec['beginning']
 
 
 for single_block in json_containing_parsed_spec['block_list']:
-    print(single_block['block_type'])
+    print(single_block['content'])
 
 
 
