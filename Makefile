@@ -2,10 +2,10 @@
 
 run:
 ifdef SPEC
-	python specparser.py -i ${SPEC}
+	python abstract_model.py -i ${SPEC}
 endif
 ifndef SPEC
-	python specparser.py
+	python abstract_model.py
 endif
 
 test:

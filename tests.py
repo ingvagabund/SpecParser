@@ -7,7 +7,7 @@ number = 1
 failures = 0
 
 for specfile_filename in testing_specfiles:
-    os.system('python specparser.py -i ./Tests/Inputs/' + specfile_filename + ' > ./Tests/Outputs/' + specfile_filename)
+    os.system('python abstract_model.py -i ./Tests/Inputs/' + specfile_filename + ' > ./Tests/Outputs/' + specfile_filename)
     
     intro = 'TEST ' + str(number) + ': '
 
