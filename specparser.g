@@ -1,4 +1,4 @@
-import argparse, sys, re, json, io
+import argparse, json, io
 
 
 class BlockTypes(object):
@@ -27,7 +27,7 @@ class Block(object):
         self.block_type = type
 
 
-Specfile = Specfile()
+Specfile = SpecfileClass()
 
 
 def parse_arguments():
@@ -267,7 +267,7 @@ parser SpecfileParser:
 
 
 %%
-if __name__ == '__main__':
+def parse_specfile():
 
     args = parse_arguments()
 
@@ -276,4 +276,4 @@ if __name__ == '__main__':
 
     parse('goal', open_specfile(args.input))
 
-    print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
+    return json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True)
