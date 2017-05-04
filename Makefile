@@ -1,4 +1,4 @@
-.PHONY: test
+.PHONY: test clean
 
 run:
 ifdef SPEC
@@ -10,3 +10,6 @@ endif
 
 test:
 	python tests.py
+
+clean:
+	rm -f *.pyc

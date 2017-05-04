@@ -15,9 +15,20 @@ class BlockTypes(object):
 
 class Specfile(object):
 
-    def __init__(self):
+    def __init__(self, type):
         self.beginning = ""
-        self.block_list = []
+
+        if type == 'Parser':
+            self.block_list = []
+
+        elif type == 'AbstractModel':
+            self.headerTags = []
+            self.sectionTags = []
+            self.macroDefinitions = []
+            self.macroConditions = []
+            self.macroUndefinitions = []
+            self.comments = []
+            self.conditions = []
 
 
 
@@ -27,7 +38,7 @@ class Block(object):
         self.block_type = type
 
 
-Specfile = SpecfileClass()
+Specfile = SpecfileClass('Parser')
 
 
 def parse_arguments():
