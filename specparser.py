@@ -250,13 +250,13 @@ class SpecfileParser(runtime.Parser):
             _token = self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
             if _token == 'CONDITION_BEG_KEYWORD':
                 condition_definition = self.condition_definition(_context)
-                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition)
+                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition)
                 elif condition_definition not in block.content: block.content.append(condition_definition)
             else: # == 'CONDITION_BODY'
                 body = self.body(_context)
                 count = len(Specfile.block_list)
                 parse('spec_file', body)
-                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:]
+                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:]
                 elif Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:]
                 Specfile.block_list = Specfile.block_list[:count]
             if self._peek('PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
@@ -317,7 +317,7 @@ class SpecfileParser(runtime.Parser):
             NEWLINE = self._scan('NEWLINE', context=_context)
             SECTION_CONTENT = self._scan('SECTION_CONTENT', context=_context)
             block = Block(BlockTypes.SectionTagType)
-            block.key = SECTION_KEY
+            block.keyword = SECTION_KEY
             block.content = NEWLINE + SECTION_CONTENT
             if 'PARAMETERS' in locals(): block.parameters = PARAMETERS
             else: block.parameters = None
@@ -338,7 +338,7 @@ class SpecfileParser(runtime.Parser):
             NEWLINE = self._scan('NEWLINE', context=_context)
             SECTION_CONTENT_NOPARSE = self._scan('SECTION_CONTENT_NOPARSE', context=_context)
             block = Block(BlockTypes.SectionTagType)
-            block.key = SECTION_KEY_NOPARSE
+            block.keyword = SECTION_KEY_NOPARSE
             block.content = NEWLINE + SECTION_CONTENT_NOPARSE
             if 'PARAMETERS' in locals(): block.parameters = PARAMETERS
             else: block.parameters = None
@@ -358,7 +358,7 @@ class SpecfileParser(runtime.Parser):
             NEWLINE = self._scan('NEWLINE', context=_context)
             PACKAGE_CONTENT = self._scan('PACKAGE_CONTENT', context=_context)
             block = Block(BlockTypes.SectionTagType)
-            block.key = PACKAGE_KEYWORD
+            block.keyword = PACKAGE_KEYWORD
             if 'NAME' in locals(): block.name = NAME + NEWLINE
             else: block.name = NEWLINE
             if 'PARAMETERS' in locals(): block.parameters = PARAMETERS

@@ -13,7 +13,7 @@ class BlockTypes(object):
 
 
 
-class Specfile(object):
+class SpecfileClass(object):
 
     def __init__(self, type):
         self.beginning = ""
@@ -185,11 +185,11 @@ parser SpecfileParser:
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                                         {{ block.else_body = [] }}
                         ((condition_definition              
-                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition) }}
+                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition) }}
                                         {{ elif condition_definition not in block.content: block.content.append(condition_definition) }}
                         | body          {{ count = len(Specfile.block_list) }} 
                                         {{ parse('spec_file', body) }}
-                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].key and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:] }}
+                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:] }}
                                         {{ elif Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                         ) PERCENT_SIGN?)*
@@ -225,7 +225,7 @@ parser SpecfileParser:
 
     rule section:           SECTION_KEY option? (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT
                                                                         {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.key = SECTION_KEY }}
+                                                                        {{ block.keyword = SECTION_KEY }}
                                                                         {{ block.content = NEWLINE + SECTION_CONTENT }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
                                                                         {{ else: block.parameters = None }}
@@ -236,7 +236,7 @@ parser SpecfileParser:
                                                                         {{ return block }}
                         |   SECTION_KEY_NOPARSE option?  (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT_NOPARSE
                                                                         {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.key = SECTION_KEY_NOPARSE }}
+                                                                        {{ block.keyword = SECTION_KEY_NOPARSE }}
                                                                         {{ block.content = NEWLINE + SECTION_CONTENT_NOPARSE }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
                                                                         {{ else: block.parameters = None }}
@@ -248,7 +248,7 @@ parser SpecfileParser:
                         |                                               {{ count = len(Specfile.block_list) }}
                             PACKAGE_KEYWORD (DASH PARAMETERS)? NAME? NEWLINE PACKAGE_CONTENT
                                                                         {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.key = PACKAGE_KEYWORD }}
+                                                                        {{ block.keyword = PACKAGE_KEYWORD }}
                                                                         {{ if 'NAME' in locals(): block.name = NAME + NEWLINE }}
                                                                         {{ else: block.name = NEWLINE }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
