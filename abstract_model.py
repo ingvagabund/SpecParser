@@ -1,6 +1,7 @@
 from __future__ import print_function
 import json
 from specparser import parse_specfile, SpecfileClass, BlockTypes
+from model_methods import *
 from pprint import pprint
 import ctypes
 
@@ -96,4 +97,5 @@ previous_node_next_pointer = Specfile.beginning
 
 json_to_specfile_class(json_containing_parsed_spec['block_list'])
 
-print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
+# print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
+print_specfile(Specfile)
