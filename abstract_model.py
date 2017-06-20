@@ -15,7 +15,7 @@ def json_to_specfile_class(json_containing_parsed_spec):
     
     global Specfile
     global previous_node_next_pointer
-    global next_field 
+    global next_field
 
     for single_block in json_containing_parsed_spec:
         single_block['next'] = None
@@ -30,10 +30,16 @@ def json_to_specfile_class(json_containing_parsed_spec):
             else:
                 content = single_block['content']
                 del single_block['content']
+                point_package_to_ptr = previous_node_next_pointer
                 Specfile.sectionTags.append(remove_blocktype(single_block))
                 if content != []:
+                    tmp = {'next': None}
+                    previous_node_next_pointer = tmp
                     json_to_specfile_class(content)
+                    single_block['content'] = tmp['next']
+                Specfile.conditions.append(remove_blocktype(single_block))
                 next_field = Specfile.sectionTags[-1]
+                previous_node_next_pointer = point_package_to_ptr
         elif single_block['block_type'] == BlockTypes.MacroDefinitionType:
             Specfile.macroDefinitions.append(remove_blocktype(single_block))
             next_field = Specfile.macroDefinitions[-1]
