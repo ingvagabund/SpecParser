@@ -12,4 +12,4 @@ test:
 	python tests.py
 
 clean:
-	rm -f *.pyc ./Tests/Outputs/*.spec
+	rm -rf *.pyc ./Tests/Outputs/*

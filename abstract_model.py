@@ -1,101 +1,34 @@
 from __future__ import print_function
-import json
-from specparser import parse_specfile, SpecfileClass, BlockTypes
-from model_methods import *
 from pprint import pprint
 import ctypes
 
 
-def remove_blocktype(single_block):
-    
-    # del single_block['block_type']
-    return single_block
+
+class BlockTypes(object):
+
+    HeaderTagType = 0
+    SectionTagType = 1
+    MacroDefinitionType = 2
+    MacroConditionType = 3
+    MacroUndefinitionType = 4
+    CommentType = 5
+    ConditionType = 6
 
 
-def json_to_specfile_class(json_containing_parsed_spec):
-    
-    global Specfile
-    global previous_node_next_pointer
-    global next_field
 
-    for single_block in json_containing_parsed_spec:
-        single_block['next'] = None
+class SpecfileClass(object):
 
-        # Header Tag
-        if single_block['block_type'] == BlockTypes.HeaderTagType:
-            Specfile.headerTags.append(remove_blocktype(single_block))
-            next_field = Specfile.headerTags[-1]
+    def __init__(self, type):
+        self.beginning = ""
 
-        # Section Tag
-        elif single_block['block_type'] == BlockTypes.SectionTagType:
-            if 'package' not in single_block['keyword']:
-                Specfile.sectionTags.append(remove_blocktype(single_block))
-                next_field = Specfile.sectionTags[-1]
-            else:
-                content = single_block['content']
-                del single_block['content']
-                point_package_to_ptr = previous_node_next_pointer
-                Specfile.sectionTags.append(remove_blocktype(single_block))
-                if content != []:
-                    tmp = {'next': None}
-                    previous_node_next_pointer = tmp
-                    json_to_specfile_class(content)
-                    single_block['content'] = tmp['next']
-                Specfile.conditions.append(remove_blocktype(single_block))
-                next_field = Specfile.sectionTags[-1]
-                previous_node_next_pointer = point_package_to_ptr
+        if type == 'Parser':
+            self.block_list = []
 
-        # Macro Definition
-        elif single_block['block_type'] == BlockTypes.MacroDefinitionType:
-            Specfile.macroDefinitions.append(remove_blocktype(single_block))
-            next_field = Specfile.macroDefinitions[-1]
-
-        # Macro Condition
-        elif single_block['block_type'] == BlockTypes.MacroConditionType:
-            Specfile.macroConditions.append(remove_blocktype(single_block))
-            next_field = Specfile.macroConditions[-1]
-        
-        # Macro Undefinition
-        elif single_block['block_type'] == BlockTypes.MacroUndefinitionType:
-            Specfile.macroUndefinitions.append(remove_blocktype(single_block))
-            next_field = Specfile.macroUndefinitions[-1]
-
-        # Commentary
-        elif single_block['block_type'] == BlockTypes.CommentType:
-            Specfile.comments.append(remove_blocktype(single_block))
-            next_field = Specfile.comments[-1]
-        
-        # Condition
-        elif single_block['block_type'] == BlockTypes.ConditionType:
-            content = single_block['content']
-            else_body = single_block['else_body']
-            point_condition_to_ptr = previous_node_next_pointer
-            if content != []:
-                tmp = {'next': None}
-                previous_node_next_pointer = tmp
-                json_to_specfile_class(content)
-                single_block['content'] = tmp['next']
-            if else_body != []:
-                tmp = {'next': None}
-                previous_node_next_pointer = tmp
-                json_to_specfile_class(else_body)
-                single_block['else_body'] = tmp['next']                
-            Specfile.conditions.append(remove_blocktype(single_block))
-            next_field = Specfile.conditions[-1]
-            previous_node_next_pointer = point_condition_to_ptr
-
-        previous_node_next_pointer.update({'next': next_field})
-        previous_node_next_pointer = next_field
-
-
-json_containing_parsed_spec = json.loads(parse_specfile())
-Specfile = SpecfileClass('AbstractModel')
-Specfile.beginning = {'content': json_containing_parsed_spec['beginning'], 'next': None}
-
-next_field = None
-previous_node_next_pointer = Specfile.beginning
-
-json_to_specfile_class(json_containing_parsed_spec['block_list'])
-
-# print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
-print_specfile(Specfile)
+        elif type == 'AbstractModel':
+            self.headerTags = []
+            self.sectionTags = []
+            self.macroDefinitions = []
+            self.macroConditions = []
+            self.macroUndefinitions = []
+            self.comments = []
+            self.conditions = []
