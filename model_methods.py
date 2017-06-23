@@ -6,9 +6,6 @@ from specparser import parse_specfile
 
 
 
-
-
-
 def remove_blocktype(single_block):
     
     # del single_block['block_type']
@@ -105,21 +102,7 @@ def create_abstract_model(input_filepath):
 
     json_to_specfile_class(json_containing_parsed_spec['block_list'])
 
-    print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
-    # class_to_specfile(Specfile)
-
-    return
-
-
-
-
-
-
-
-
-
-
-
+    return Specfile
 
 
 # specfile class to specfile reconstruction - main
@@ -148,21 +131,34 @@ def print_field(intern_field):
                     print(str(single_log), end='')
             # elif "package" in intern_field["keyword"]: # TODO
             else:
-                print(str(intern_field["content"]), end='')
+                # print('%' + str(intern_field["keyword"]))
+                if intern_field["parameters"] is not None:
+                    print('-' + str(intern_field["parameters"]), end='')
+                if intern_field["subname"] is not None:
+                    print(str(intern_field["subname"]), end='')
+                if intern_field["content"] is not None:
+                    print(str(intern_field["content"]), end='')                        
+                # print(str(intern_field["name"]))
 
         elif intern_field["block_type"] == BlockTypes.CommentType:
             print(str(intern_field["content"]), end='')
 
         elif intern_field["block_type"] == BlockTypes.MacroDefinitionType:
-            print("%" + str(intern_field["keyword"]) + str(intern_field["name"]) + str(intern_field["options"]) + str(intern_field["body"]), end='')
+            print("%" + str(intern_field["keyword"]) + str(intern_field["name"]), end='')
+            if intern_field["options"] is not None:
+                print(str(intern_field["options"]), end='')
+            print(str(intern_field["body"]), end='')
 
         elif intern_field["block_type"] == BlockTypes.MacroConditionType:
             print("%" + str(intern_field["name"]) + str(intern_field["condition"]) + str(intern_field["content"]), end='')
 
         elif intern_field["block_type"] == BlockTypes.ConditionType:
-            print("%" + str(intern_field["keyword"]) + str(intern_field["expression"]), end='')
+            if intern_field["keyword"] is not None and intern_field["expression"] is not None:
+                print("%" + str(intern_field["keyword"]) + str(intern_field["expression"]), end='')
             print_field(intern_field["content"])
-            print("%endif\n\n", end='')         # TODO
+            if intern_field["else_keyword"] is not None and intern_field["else_body"] is not None:
+                print("%" + str(intern_field["else_keyword"]) + str(intern_field["else_body"]), end='')
+            print("%" + str(intern_field["end_keyword"]), end='')         # TODO
 
 
 
