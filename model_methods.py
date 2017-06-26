@@ -12,7 +12,7 @@ def remove_blocktype(single_block):
     return single_block
 
 
-def json_to_specfile_class(json_containing_parsed_spec):
+def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
     
     global Specfile
     global previous_node_next_pointer
@@ -20,6 +20,9 @@ def json_to_specfile_class(json_containing_parsed_spec):
 
     for single_block in json_containing_parsed_spec:
         single_block['next'] = None
+        
+        if predicate_list != []:
+            single_block['AP'] = predicate_list
 
         # Header Tag
         if single_block['block_type'] == BlockTypes.HeaderTagType:
@@ -38,7 +41,7 @@ def json_to_specfile_class(json_containing_parsed_spec):
                 if content != []:
                     tmp = {'next': None}
                     previous_node_next_pointer = tmp
-                    json_to_specfile_class(content)
+                    json_to_specfile_class(content, predicate_list)
                     single_block['content'] = tmp['next']
                 Specfile.sectionTags.append(remove_blocktype(single_block))
                 next_field = Specfile.sectionTags[-1]
@@ -72,12 +75,12 @@ def json_to_specfile_class(json_containing_parsed_spec):
             if content != []:
                 tmp = {'next': None}
                 previous_node_next_pointer = tmp
-                json_to_specfile_class(content)
+                json_to_specfile_class(content, predicate_list + [[single_block['expression'], 1]])
                 single_block['content'] = tmp['next']
             if else_body != []:
                 tmp = {'next': None}
                 previous_node_next_pointer = tmp
-                json_to_specfile_class(else_body)
+                json_to_specfile_class(else_body, predicate_list + [[single_block['expression'], 0]])
                 single_block['else_body'] = tmp['next']                
             Specfile.conditions.append(remove_blocktype(single_block))
             next_field = Specfile.conditions[-1]
@@ -100,7 +103,7 @@ def create_abstract_model(input_filepath):
     next_field = None
     previous_node_next_pointer = Specfile.beginning
 
-    json_to_specfile_class(json_containing_parsed_spec['block_list'])
+    json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
 
     return Specfile
 
@@ -153,7 +156,6 @@ def print_field(intern_field):
                     print(str(intern_field["subname"]), end='')
 
                 if "package" in intern_field["keyword"]:
-                    # print(str(intern_field["name"]), end='')
                     print_field(intern_field["content"])
                 else:
                     if "content" in intern_field and intern_field["content"] is not None:
