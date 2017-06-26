@@ -35,13 +35,12 @@ def json_to_specfile_class(json_containing_parsed_spec):
                 content = single_block['content']
                 del single_block['content']
                 point_package_to_ptr = previous_node_next_pointer
-                Specfile.sectionTags.append(remove_blocktype(single_block))
                 if content != []:
                     tmp = {'next': None}
                     previous_node_next_pointer = tmp
                     json_to_specfile_class(content)
                     single_block['content'] = tmp['next']
-                Specfile.conditions.append(remove_blocktype(single_block))
+                Specfile.sectionTags.append(remove_blocktype(single_block))
                 next_field = Specfile.sectionTags[-1]
                 previous_node_next_pointer = point_package_to_ptr
 
@@ -96,6 +95,7 @@ def create_abstract_model(input_filepath):
 
     json_containing_parsed_spec = json.loads(parse_specfile(input_filepath))
     Specfile.beginning = {'content': json_containing_parsed_spec['beginning'], 'next': None}
+    Specfile.end = json_containing_parsed_spec['end'];
 
     next_field = None
     previous_node_next_pointer = Specfile.beginning
@@ -112,6 +112,8 @@ def class_to_specfile(intern_specfile):
 
     if intern_specfile.beginning["next"] != None:
         print_field(intern_specfile.beginning["next"])
+    
+    print(str(intern_specfile.end), end='')
 
     return
 
@@ -121,7 +123,10 @@ def print_field(intern_field):
 
     if intern_field != None:
         if intern_field["block_type"] == BlockTypes.HeaderTagType:
-            print(str(intern_field["key"]) + ":" + str(intern_field["content"]), end='')
+            print(str(intern_field["key"]), end='')
+            if "option" in intern_field and intern_field["option"] is not None:
+                print('(' + str(intern_field["option"]) + ')', end='')
+            print(":" + str(intern_field["content"]), end='')
 
         elif intern_field["block_type"] == BlockTypes.SectionTagType:
             print("%" + str(intern_field["keyword"]), end='')
@@ -129,16 +134,30 @@ def print_field(intern_field):
             if "changelog" in intern_field["keyword"]:
                 for single_log in intern_field["content"]:
                     print(str(single_log), end='')
-            # elif "package" in intern_field["keyword"]: # TODO
-            else:
-                # print('%' + str(intern_field["keyword"]))
-                if intern_field["parameters"] is not None:
+            elif "files" in intern_field["keyword"]:
+                if "name" in intern_field and intern_field["name"] is not None:            
+                    print(str(intern_field["name"]), end='')            
+                if "parameters" in intern_field and intern_field["parameters"] is not None:
                     print('-' + str(intern_field["parameters"]), end='')
-                if intern_field["subname"] is not None:
+                if "subname" in intern_field and intern_field["subname"] is not None:
                     print(str(intern_field["subname"]), end='')
-                if intern_field["content"] is not None:
+                if "content" in intern_field and intern_field["content"] is not None:
                     print(str(intern_field["content"]), end='')                        
-                # print(str(intern_field["name"]))
+                    
+            else:
+                if "parameters" in intern_field and intern_field["parameters"] is not None:
+                    print('-' + str(intern_field["parameters"]), end='')
+                if "name" in intern_field and intern_field["name"] is not None:            
+                    print(str(intern_field["name"]), end='')            
+                if "subname" in intern_field and intern_field["subname"] is not None:
+                    print(str(intern_field["subname"]), end='')
+
+                if "package" in intern_field["keyword"]:
+                    # print(str(intern_field["name"]), end='')
+                    print_field(intern_field["content"])
+                else:
+                    if "content" in intern_field and intern_field["content"] is not None:
+                        print(str(intern_field["content"]), end='')                        
 
         elif intern_field["block_type"] == BlockTypes.CommentType:
             print(str(intern_field["content"]), end='')
@@ -150,19 +169,18 @@ def print_field(intern_field):
             print(str(intern_field["body"]), end='')
 
         elif intern_field["block_type"] == BlockTypes.MacroConditionType:
-            print("%" + str(intern_field["name"]) + str(intern_field["condition"]) + str(intern_field["content"]), end='')
+            print("%{" + str(intern_field["condition"]) + str(intern_field["name"]) + ':' + str(intern_field["content"]) + '}' + str(intern_field["ending"]), end='')
 
         elif intern_field["block_type"] == BlockTypes.ConditionType:
             if intern_field["keyword"] is not None and intern_field["expression"] is not None:
                 print("%" + str(intern_field["keyword"]) + str(intern_field["expression"]), end='')
             print_field(intern_field["content"])
             if intern_field["else_keyword"] is not None and intern_field["else_body"] is not None:
-                print("%" + str(intern_field["else_keyword"]) + str(intern_field["else_body"]), end='')
-            print("%" + str(intern_field["end_keyword"]), end='')         # TODO
-
-
+                print("%" + str(intern_field["else_keyword"]), end='')
+                print_field(intern_field["else_body"])
+            print("%" + str(intern_field["end_keyword"]), end='')
 
         if intern_field["next"] != None:
             print_field(intern_field["next"])
-
+    
     return

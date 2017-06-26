@@ -2,14 +2,14 @@
 
 run:
 ifdef SPEC
-	python abstract_model.py -i ${SPEC}
+	python specparser_main.py -i ${SPEC}
 endif
 ifndef SPEC
-	python abstract_model.py
+	python specparser_main.py
 endif
 
 test:
-	python tests.py
+	python specparser_main.py -t 1
 
 clean:
 	rm -rf *.pyc ./Tests/Outputs/*
