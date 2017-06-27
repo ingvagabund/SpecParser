@@ -1,9 +1,18 @@
 from __future__ import print_function
 import json
+from copy import deepcopy
 
 from abstract_model import BlockTypes, SpecfileClass
-from specparser import parse_specfile
+from specparser import parse_file, open_file
 
+
+def extern_json_to_specfile_class(json_containing_parsed_spec):
+
+    for key in json_containing_parsed_spec:
+        if key != 'beginning' and key != 'end':
+            setattr(Specfile, key, json_containing_parsed_spec[key])
+
+    return
 
 
 def remove_blocktype(single_block):
@@ -95,28 +104,38 @@ previous_node_next_pointer = None
 def create_abstract_model(input_filepath):
 
     global previous_node_next_pointer
+        
+    json_containing_parsed_spec = json.loads(parse_file(input_filepath))
 
-    json_containing_parsed_spec = json.loads(parse_specfile(input_filepath))
-    Specfile.beginning = {'content': json_containing_parsed_spec['beginning'], 'next': None}
+    if isinstance(json_containing_parsed_spec['beginning'], basestring):
+        Specfile.beginning = {'content': json_containing_parsed_spec['beginning'], 'next': None}
+    else:
+        Specfile.beginning = {'content': json_containing_parsed_spec['beginning']['content'], 'next': json_containing_parsed_spec['beginning']['next']}        
     Specfile.end = json_containing_parsed_spec['end'];
 
     next_field = None
     previous_node_next_pointer = Specfile.beginning
 
-    json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
+    if 'block_list' in json_containing_parsed_spec:
+        json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
+
+    else:
+        extern_json_to_specfile_class(json_containing_parsed_spec)
 
     return Specfile
 
 
 # specfile class to specfile reconstruction - main
-def class_to_specfile(intern_specfile):
+def class_to_specfile(intern_specfile, pretty):
     
-    print(str(intern_specfile.beginning["content"]), end='')
+    if not pretty:      # TODO pretty print
+        print(str(intern_specfile.beginning["content"]), end='')
 
     if intern_specfile.beginning["next"] != None:
         print_field(intern_specfile.beginning["next"])
     
-    print(str(intern_specfile.end), end='')
+    if not pretty:
+        print(str(intern_specfile.end), end='')
 
     return
 
@@ -185,4 +204,22 @@ def print_field(intern_field):
         if intern_field["next"] != None:
             print_field(intern_field["next"])
     
+    return
+
+
+def remove_empty_fields(Specfile):
+    
+    reduced_Specfile = deepcopy(Specfile)
+
+    for attr, value in Specfile.__dict__.iteritems():
+        if value == []:
+            delattr(reduced_Specfile, attr)
+
+    return reduced_Specfile
+
+
+def process_config_file(Specfile, config_path):
+
+    config_data = open_file(config_path)
+    # TODO config form and make it work
     return

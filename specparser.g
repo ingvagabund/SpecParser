@@ -12,16 +12,19 @@ class Block(object):
 Specfile = SpecfileClass('Parser')
 
 
-def open_specfile(filename):
+def open_file(input_filepath):
+    
+    if input_filepath == None:
+        input_filepath = raw_input("Enter path to a specfile or json file: ")
 
     try:
-        input_file = io.open(filename, mode='r', encoding="utf-8")
+        input_file = io.open(input_filepath, mode='r', encoding="utf-8")
         input_data = input_file.read()
         input_file.close()
         return input_data
     except IOError:
-        print('ERROR: Cannot find specfile!')
-        sys.exit(1)
+        print('ERROR: Cannot open input file ' + input_filepath + '!')
+        sys.exit(3)
 
 
 %%
@@ -240,11 +243,13 @@ parser SpecfileParser:
 
 
 %%
-def parse_specfile(input_filepath):
+def parse_file(input_filepath):
 
-    if input_filepath == None:
-        input_filepath = raw_input("Enter path to the specfile: ")
+    inputfile_content = open_file(input_filepath)
 
-    parse('goal', open_specfile(input_filepath))
-
-    return json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True)
+    try:
+        json_object = json.loads(inputfile_content)
+        return inputfile_content
+    except ValueError, e:
+        parse('goal', inputfile_content)
+        return json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True)

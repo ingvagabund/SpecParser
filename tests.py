@@ -7,11 +7,13 @@ def run_tests():
     
     tests_descriptions = [  
         "TESTING TRANSFORMATION OF SPECFILE TO SPECFILE CLASS JSON REPRESENTATION",
-        "TESTING TRANSFORMATION OF SPECFILE CLASS TO SPECFILE"
+        "TESTING TRANSFORMATION OF SPECFILE CLASS TO SPECFILE",
+        "TESTING TRANSFORMATION OF JSON INPUT TO SPECFILE"
     ]
 
     arguments = [
         '-j 1 -s 0',
+        '-j 0 -s 1',
         '-j 0 -s 1'
     ]
 
@@ -32,11 +34,21 @@ def run_tests():
 
         for specfile_filename in testing_specfiles:
             
-            os.system('python specparser_main.py ' + arguments[testing_set] + ' -i ./Tests/Inputs/' + specfile_filename + ' > ./Tests/Outputs/' + str(testing_set) + '/' + specfile_filename)
+            if testing_set == 2:
+                source_file_path = ' -i ./Tests/RefOutputs/0/'
+            else:
+                source_file_path = ' -i ./Tests/Inputs/'
+
+            os.system('python specparser_main.py ' + arguments[testing_set] + source_file_path + specfile_filename + ' > ./Tests/Outputs/' + str(testing_set) + '/' + specfile_filename)
             
             intro = 'TEST ' + str(test_number) + ': '
 
-            if filecmp.cmp('./Tests/Outputs/' + str(testing_set) + '/' + specfile_filename, './Tests/RefOutputs/' + str(testing_set) + '/' + specfile_filename, False):
+            if testing_set > 0:
+                reference_output_path = './Tests/Inputs/' + specfile_filename
+            else:
+                reference_output_path = './Tests/RefOutputs/' + str(testing_set) + '/' + specfile_filename
+
+            if filecmp.cmp('./Tests/Outputs/' + str(testing_set) + '/' + specfile_filename, reference_output_path, False):
                 sys.stdout.write(intro + "\033[0;32m" + "SUCCESS!\n" + "\033[0;0m")
             else:
                 sys.stdout.write(intro + "\033[1;31m" + "FAIL!" + "\033[0;0m" + " (" + specfile_filename + ")\n")
