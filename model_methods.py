@@ -149,6 +149,85 @@ def create_abstract_model(input_filepath):
     return Specfile
 
 
+def pretty_print_block(intern_field, block_type):
+    
+    if block_type == BlockTypes.HeaderTagType:
+        print(intern_field['key'], end='')
+        if 'option' in intern_field and intern_field['option'] is not None:
+            print("(" + intern_field['option'] + ")", end='')
+        print(':' + intern_field['content'] + '\n', end='')
+
+    elif block_type == BlockTypes.SectionTagType:
+        print('%' + intern_field['keyword'], end='')
+        if 'name' in intern_field and intern_field['name'] is not None:
+            print(" " + intern_field['name'] + " ", end='')
+        if 'parameters' in intern_field and intern_field['parameters'] is not None:
+            print(" -" + intern_field['parameters'] + " ", end='')
+        if 'subname' in intern_field and intern_field['subname'] is not None:
+            print(" " + intern_field['subname'] + " ", end='')
+        if not isinstance(intern_field['content'], list):
+            print('\n' + intern_field['content'] + '\n\n', end='')
+        else:
+            for record in intern_field['content']:
+                print(record + '\n', end='')
+       
+    elif block_type == BlockTypes.MacroDefinitionType:
+        print('%' + intern_field['keyword'], end='')
+        if 'name' in intern_field and intern_field['name'] is not None:
+            print(" " + intern_field['name'] + " ", end='')
+        if 'options' in intern_field and intern_field['options'] is not None:
+            print(" -" + intern_field['options'] + " ", end='')
+        print(' ' + intern_field['body'] + '\n', end='')
+       
+    elif block_type == BlockTypes.MacroConditionType:
+        print('{' + intern_field['condition'], end='')
+        if 'name' in intern_field and intern_field['name'] is not None:
+            print(" " + intern_field['name'] + ":", end='')
+        print(intern_field['content'] + '}\n', end='')
+     
+    elif block_type == BlockTypes.MacroUndefinitionType:
+        print('%' + intern_field['keyword'], end='')
+        if 'name' in intern_field and intern_field['name'] is not None:
+            print(" " + intern_field['name'] + '\n', end='')
+
+    elif block_type == BlockTypes.CommentType:
+        print(intern_field['content'] + '\n', end='')
+
+    elif block_type == BlockTypes.ConditionType:
+        print('%' + intern_field['keyword'] + ' ', end='')
+        print(intern_field['expression'] + '\n', end='')
+        if 'content' in intern_field and intern_field['content'] is not None:
+            print_pretty_field(intern_field['content'])
+        if 'else_keyword' in intern_field and intern_field['else_keyword'] is not None:
+            print("%" + intern_field['else_keyword'] + '\n', end='')
+        if 'else_body' in intern_field and intern_field['else_body'] is not None:
+            print_pretty_field(intern_field['else_body'])
+        print('%' + intern_field['end_keyword'] + '\n', end='')
+
+    return
+
+
+def print_pretty_field(block_list):
+    
+    if block_list is None:
+        return
+
+    block_types_list = [a for a in dir(BlockTypes) if not a.startswith('__')]
+
+    for block_type in range(len(block_types_list)):
+        printed = False
+ 
+        for intern_field in block_list:
+            if intern_field != None and intern_field['block_type'] == block_type:
+                pretty_print_block(intern_field, block_type)
+                printed = True
+
+        if printed:
+            print('\n', end='')
+    
+    return
+
+
 # specfile class to specfile reconstruction - main
 def class_to_specfile(intern_specfile, pretty): # TODO pretty print
     
@@ -162,8 +241,7 @@ def class_to_specfile(intern_specfile, pretty): # TODO pretty print
 
     else:
         if intern_specfile.block_list != []:
-            print_field(intern_specfile.block_list)        
-            # print_pretty_field(intern_specfile.block_list) TODO        
+            print_pretty_field(intern_specfile.block_list)        
 
     return
 
