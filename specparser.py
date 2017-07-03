@@ -325,8 +325,8 @@ class SpecfileParser(runtime.Parser):
             PACKAGE_CONTENT = self._scan('PACKAGE_CONTENT', context=_context)
             block = Block(BlockTypes.SectionTagType)
             block.keyword = PACKAGE_KEYWORD
-            if 'NAME' in locals(): block.name = NAME + NEWLINE
-            else: block.name = NEWLINE
+            if 'NAME' in locals(): block.subname = NAME + NEWLINE
+            else: block.subname = NEWLINE
             if 'PARAMETERS' in locals(): block.parameters = PARAMETERS
             else: block.parameters = None
             parse('spec_file', PACKAGE_CONTENT)
@@ -366,7 +366,7 @@ def parse(rule, text):
 
 
 def parse_file(input_filepath):
-    
+
     inputfile_content = open_file(input_filepath)
 
     try:

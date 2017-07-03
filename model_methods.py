@@ -23,9 +23,11 @@ def remove_blocktype(single_block):
 
 def get_whitespace(current_string, order):
 
+    if current_string.isspace():
+        return "%" + str(order) + current_string
+    
     metastring = current_string[:len(current_string) - len(current_string.lstrip())]
     metastring += "%" + str(order)
-    # if current_string.isspace():
     metastring += current_string[len(current_string.rstrip()):]
 
     return metastring
@@ -36,12 +38,15 @@ def create_metastring(single_block, block_type):
     metastring = ""
 
     for i, key in enumerate(keys_list[block_type]):
-       
-        if key in single_block: 
+
+        if key in single_block:
 
             if isinstance(single_block[key], dict):
                 create_metastring(single_block[key], single_block[key]['block_type'])
-                
+
+                if 'keyword' in single_block and single_block['keyword'] == 'package':
+                    metastring += '%' + str(i)
+
             else:
                 if isinstance(single_block[key], list):
                     if single_block[key] != []:
@@ -53,6 +58,9 @@ def create_metastring(single_block, block_type):
                     if single_block[key] is not None:
                         metastring += get_whitespace(single_block[key], i)
                         single_block[key] = single_block[key].strip()
+
+                if 'metastring' in single_block and len(single_block['metastring']) > len(metastring):
+                    return single_block
 
                 single_block['metastring'] = metastring
 
@@ -90,7 +98,10 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
                     previous_node_next_pointer = tmp
                     json_to_specfile_class(content, predicate_list)
                     single_block['content'] = tmp['next']
-                Specfile.sectionTags.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
+                created_block = remove_blocktype(create_metastring(single_block, single_block['block_type']))
+                created_block['metastring'] += '%4'
+                Specfile.sectionTags.append(created_block)
+                Specfile.sectionTags.append(create_metastring(single_block, single_block['block_type']))
                 next_field = Specfile.sectionTags[-1]
                 previous_node_next_pointer = point_package_to_ptr
 
@@ -189,7 +200,7 @@ def print_field(intern_field):
         metastring_list = intern_field['metastring'].split('%')
         print(metastring_list[0], end='')
 
-        if intern_field['block_type'] == BlockTypes.HeaderTagType:  #0
+        if intern_field['block_type'] == BlockTypes.HeaderTagType:
             for metastring in metastring_list[1:]:
                 if int(metastring[0]) == 1:
                     print('(', end='')
@@ -212,18 +223,18 @@ def print_field(intern_field):
                     print('%', end='')
                 elif int(metastring[0]) == 2:
                     print('-', end='')
-        
+                elif int(metastring[0]) == 4 and 'keyword' in intern_field and intern_field['keyword'] == 'package':
+                    print_field(intern_field['content'])
+                    break
+
                 if isinstance(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], list):
-                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]][counter])
+                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]][counter], end='')
                     counter += 1
         
                 else:
                     print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
                 print(metastring[1:], end='')
     
-                if int(metastring[0]) == 1 and intern_field[keys_list[intern_field['block_type']][0]] == 'package':
-                    print_field(intern_field['content'])                    
-
         elif intern_field['block_type'] == BlockTypes.MacroDefinitionType:
             for metastring in metastring_list[1:]:
                 if int(metastring[0]) == 0:
