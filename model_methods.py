@@ -23,6 +23,9 @@ def remove_blocktype(single_block):
 
 def get_whitespace(current_string, order):
 
+    if not isinstance(current_string, basestring):
+        return ""
+
     if current_string.isspace():
         return "%" + str(order) + current_string
     
@@ -51,9 +54,10 @@ def create_metastring(single_block, block_type):
                 if isinstance(single_block[key], list):
                     if single_block[key] != []:
                         for j, record in enumerate(single_block[key]):
-                            metastring += get_whitespace(record, i)
-                            single_block[key][j] = record.strip()
-
+                            if isinstance(record, basestring):
+                                metastring += get_whitespace(record, i)
+                                single_block[key][j] = record.strip()
+                    metastring = metastring
                 else:
                     if single_block[key] is not None:
                         metastring += get_whitespace(single_block[key], i)
@@ -70,100 +74,72 @@ def create_metastring(single_block, block_type):
 def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
     
     global Specfile
-    global previous_node_next_pointer
-    global next_field
+
+    if json_containing_parsed_spec is None:
+        return
 
     for single_block in json_containing_parsed_spec:
-        single_block['next'] = None
-        
         if predicate_list != []:
             single_block['AP'] = predicate_list
 
         # Header Tag
         if single_block['block_type'] == BlockTypes.HeaderTagType:
-            Specfile.headerTags.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            next_field = Specfile.headerTags[-1]
+            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
 
         # Section Tag
         elif single_block['block_type'] == BlockTypes.SectionTagType:
             if 'package' not in single_block['keyword']:
-                Specfile.sectionTags.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-                next_field = Specfile.sectionTags[-1]
+                Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
             else:
-                content = single_block['content']
-                del single_block['content']
-                point_package_to_ptr = previous_node_next_pointer
-                if content != []:
-                    tmp = {'next': None}
-                    previous_node_next_pointer = tmp
-                    json_to_specfile_class(content, predicate_list)
-                    single_block['content'] = tmp['next']
+                if single_block['content'] != []:
+                    count = len(Specfile.block_list)
+                    json_to_specfile_class(single_block['content'], predicate_list)
+                    Specfile.block_list = Specfile.block_list[:count]
                 created_block = remove_blocktype(create_metastring(single_block, single_block['block_type']))
                 created_block['metastring'] += '%4'
-                Specfile.sectionTags.append(created_block)
-                Specfile.sectionTags.append(create_metastring(single_block, single_block['block_type']))
-                next_field = Specfile.sectionTags[-1]
-                previous_node_next_pointer = point_package_to_ptr
+                Specfile.block_list.append(created_block)
+                # Specfile.block_list.append(create_metastring(single_block, single_block['block_type']))
 
         # Macro Definition
         elif single_block['block_type'] == BlockTypes.MacroDefinitionType:
-            Specfile.macroDefinitions.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            next_field = Specfile.macroDefinitions[-1]
+            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
 
         # Macro Condition
         elif single_block['block_type'] == BlockTypes.MacroConditionType:
-            Specfile.macroConditions.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            next_field = Specfile.macroConditions[-1]
+            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
         
         # Macro Undefinition
         elif single_block['block_type'] == BlockTypes.MacroUndefinitionType:
-            Specfile.macroUndefinitions.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            next_field = Specfile.macroUndefinitions[-1]
+            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
 
         # Commentary
         elif single_block['block_type'] == BlockTypes.CommentType:
-            Specfile.comments.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            next_field = Specfile.comments[-1]
+            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
         
         # Condition
         elif single_block['block_type'] == BlockTypes.ConditionType:
-            content = single_block['content']
-            else_body = single_block['else_body']
-            point_condition_to_ptr = previous_node_next_pointer
-            if content != []:
-                tmp = {'next': None}
-                previous_node_next_pointer = tmp
-                json_to_specfile_class(content, predicate_list + [[single_block['expression'], 1]])
-                single_block['content'] = tmp['next']
-            if else_body != []:
-                tmp = {'next': None}
-                previous_node_next_pointer = tmp
-                json_to_specfile_class(else_body, predicate_list + [[single_block['expression'], 0]])
-                single_block['else_body'] = tmp['next']                
-            Specfile.conditions.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            next_field = Specfile.conditions[-1]
-            previous_node_next_pointer = point_condition_to_ptr
+            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
+            count = len(Specfile.block_list)
+            if single_block['content'] != []:
+                json_to_specfile_class(single_block['content'], predicate_list + [[single_block['expression'], 1]])
+            if single_block['else_body'] != []:
+                json_to_specfile_class(single_block['else_body'], predicate_list + [[single_block['expression'], 0]])
+            Specfile.block_list = Specfile.block_list[:count]
+            
+Specfile = SpecfileClass()
 
-        previous_node_next_pointer.update({'next': next_field})
-        previous_node_next_pointer = next_field
-
-Specfile = SpecfileClass('AbstractModel')
-previous_node_next_pointer = None
 
 def create_abstract_model(input_filepath):
 
-    global previous_node_next_pointer
+    global Specfile
         
     json_containing_parsed_spec = json.loads(parse_file(input_filepath))
 
     if isinstance(json_containing_parsed_spec['beginning'], basestring):
-        Specfile.beginning = {'content': json_containing_parsed_spec['beginning'], 'next': None}
+        Specfile.beginning = json_containing_parsed_spec['beginning']
     else:
-        Specfile.beginning = {'content': json_containing_parsed_spec['beginning']['content'], 'next': json_containing_parsed_spec['beginning']['next']}        
+        Specfile.beginning = {'content': json_containing_parsed_spec['beginning']['content']}        
     Specfile.end = json_containing_parsed_spec['end'];
-
-    next_field = None
-    previous_node_next_pointer = Specfile.beginning
 
     if 'block_list' in json_containing_parsed_spec:
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
@@ -178,176 +154,117 @@ def create_abstract_model(input_filepath):
 def class_to_specfile(intern_specfile, pretty): # TODO pretty print
     
     if not pretty:
-        print(str(intern_specfile.beginning["content"]), end='')
+        print(str(intern_specfile.beginning), end='')
 
-        if intern_specfile.beginning["next"] != None:
-            print_field(intern_specfile.beginning["next"])
+        if intern_specfile.block_list != []:
+            print_field(intern_specfile.block_list)
     
         print(str(intern_specfile.end), end='')
 
     else:
-        if intern_specfile.beginning["next"] != None:
-            print_field(intern_specfile.beginning["next"])        
-            # print_pretty_field(intern_specfile.beginning["next"]) TODO        
+        if intern_specfile.block_list != []:
+            print_field(intern_specfile.block_list)        
+            # print_pretty_field(intern_specfile.block_list) TODO        
 
     return
 
 
 # specfile class to specfile reconstruction - subprocedure
-def print_field(intern_field):
+def print_field(block_list):
 
-    if intern_field != None:
-        metastring_list = intern_field['metastring'].split('%')
-        print(metastring_list[0], end='')
+    if block_list is None:
+        return
 
-        if intern_field['block_type'] == BlockTypes.HeaderTagType:
-            for metastring in metastring_list[1:]:
-                if int(metastring[0]) == 1:
-                    print('(', end='')
+    for intern_field in block_list:
+        if intern_field != None:
+            metastring_list = intern_field['metastring'].split('%')
+            print(metastring_list[0], end='')
 
-                print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+            if intern_field['block_type'] == BlockTypes.HeaderTagType:
+                for metastring in metastring_list[1:]:
+                    if int(metastring[0]) == 1:
+                        print('(', end='')
 
-                if int(metastring[0]) == 0 and intern_field['option'] == None:
-                    print(':', end='')
-                elif int(metastring[0]) == 1:
-                    print('):', end='')
-
-                print(metastring[1:], end='')
-
-
-        elif intern_field['block_type'] == BlockTypes.SectionTagType:
-            counter = 0
-
-            for metastring in metastring_list[1:]:
-                if int(metastring[0]) == 0:
-                    print('%', end='')
-                elif int(metastring[0]) == 2:
-                    print('-', end='')
-                elif int(metastring[0]) == 4 and 'keyword' in intern_field and intern_field['keyword'] == 'package':
-                    print_field(intern_field['content'])
-                    break
-
-                if isinstance(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], list):
-                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]][counter], end='')
-                    counter += 1
-        
-                else:
                     print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
-                print(metastring[1:], end='')
-    
-        elif intern_field['block_type'] == BlockTypes.MacroDefinitionType:
-            for metastring in metastring_list[1:]:
-                if int(metastring[0]) == 0:
-                    print('%', end='')
 
-                print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
-                print(metastring[1:], end='')
+                    if int(metastring[0]) == 0 and intern_field['option'] == None:
+                        print(':', end='')
+                    elif int(metastring[0]) == 1:
+                        print('):', end='')
 
-        elif intern_field['block_type'] == BlockTypes.MacroConditionType:
-            for metastring in metastring_list[1:]:
-                if int(metastring[0]) == 0:
-                    print('%{', end='')
-                elif int(metastring[0]) == 2:
-                    print(':', end='')
-                elif int(metastring[0]) == 3:
-                    print('}', end='')
+                    print(metastring[1:], end='')
 
-                print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
-                print(metastring[1:], end='')
+            elif intern_field['block_type'] == BlockTypes.SectionTagType:
+                counter = 0
 
-        elif intern_field['block_type'] == BlockTypes.MacroUndefinitionType:
-            for metastring in metastring_list[1:]:
-                if int(metastring[0]) == 0:
-                    print('%', end='')
+                for metastring in metastring_list[1:]:
+                    if int(metastring[0]) == 0:
+                        print('%', end='')
+                    elif int(metastring[0]) == 2:
+                        print('-', end='')
+                    elif int(metastring[0]) == 4 and 'keyword' in intern_field and intern_field['keyword'] == 'package':
+                        print_field(intern_field['content'])
+                        break
 
-                print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
-                print(metastring[1:], end='')
+                    if isinstance(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], list):
+                        print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]][counter], end='')
+                        counter += 1
+            
+                    else:
+                        print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    print(metastring[1:], end='')
+        
+            elif intern_field['block_type'] == BlockTypes.MacroDefinitionType:
+                for metastring in metastring_list[1:]:
+                    if int(metastring[0]) == 0:
+                        print('%', end='')
 
-        elif intern_field['block_type'] == BlockTypes.CommentType:
-            for metastring in metastring_list[1:]:
-                print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
-                print(metastring[1:], end='')
+                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    print(metastring[1:], end='')
 
-        elif intern_field['block_type'] == BlockTypes.ConditionType:
-            for metastring in metastring_list[1:]:
-                if int(metastring[0]) in [0, 3, 5]:
-                    print('%', end='')
+            elif intern_field['block_type'] == BlockTypes.MacroConditionType:
+                for metastring in metastring_list[1:]:
+                    if int(metastring[0]) == 0:
+                        print('%{', end='')
+                    elif int(metastring[0]) == 2:
+                        print(':', end='')
+                    elif int(metastring[0]) == 3:
+                        print('}', end='')
 
-                print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
-                print(metastring[1:], end='')
+                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    print(metastring[1:], end='')
 
-                if int(metastring[0]) == 1:
-                    print_field(intern_field['content'])
-               
-                elif int(metastring[0]) == 3:
-                    print_field(intern_field['else_body'])
+            elif intern_field['block_type'] == BlockTypes.MacroUndefinitionType:
+                for metastring in metastring_list[1:]:
+                    if int(metastring[0]) == 0:
+                        print('%', end='')
 
+                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    print(metastring[1:], end='')
 
+            elif intern_field['block_type'] == BlockTypes.CommentType:
+                for metastring in metastring_list[1:]:
+                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    print(metastring[1:], end='')
 
-        # if intern_field["block_type"] == BlockTypes.HeaderTagType:
-        #     print(str(intern_field["key"]), end='')
-        #     if "option" in intern_field and intern_field["option"] is not None:
-        #         print('(' + str(intern_field["option"]) + ')', end='')
-        #     print(":" + str(intern_field["content"]), end='')
+            elif intern_field['block_type'] == BlockTypes.ConditionType:
+                for metastring in metastring_list[1:]:
+                    if int(metastring[0]) in [0, 3, 5]:
+                        print('%', end='')
 
-        # elif intern_field["block_type"] == BlockTypes.SectionTagType:
-        #     print("%" + str(intern_field["keyword"]), end='')
+                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    print(metastring[1:], end='')
 
-        #     if "changelog" in intern_field["keyword"]:
-        #         for single_log in intern_field["content"]:
-        #             print(str(single_log), end='')
-        #     elif "files" in intern_field["keyword"]:
-        #         if "name" in intern_field and intern_field["name"] is not None:            
-        #             print(str(intern_field["name"]), end='')            
-        #         if "parameters" in intern_field and intern_field["parameters"] is not None:
-        #             print('-' + str(intern_field["parameters"]), end='')
-        #         if "subname" in intern_field and intern_field["subname"] is not None:
-        #             print(str(intern_field["subname"]), end='')
-        #         if "content" in intern_field and intern_field["content"] is not None:
-        #             print(str(intern_field["content"]), end='')                        
-                    
-        #     else:
-        #         if "parameters" in intern_field and intern_field["parameters"] is not None:
-        #             print('-' + str(intern_field["parameters"]), end='')
-        #         if "name" in intern_field and intern_field["name"] is not None:            
-        #             print(str(intern_field["name"]), end='')            
-        #         if "subname" in intern_field and intern_field["subname"] is not None:
-        #             print(str(intern_field["subname"]), end='')
+                    if int(metastring[0]) == 1:
+                        print_field(intern_field['content'])
+                
+                    elif int(metastring[0]) == 3:
+                        print_field(intern_field['else_body'])
 
-        #         if "package" in intern_field["keyword"]:
-        #             print_field(intern_field["content"])
-        #         else:
-        #             if "content" in intern_field and intern_field["content"] is not None:
-        #                 print(str(intern_field["content"]), end='')                        
-
-        # elif intern_field["block_type"] == BlockTypes.CommentType:
-        #     print(str(intern_field["content"]), end='')
-
-        # elif intern_field["block_type"] == BlockTypes.MacroDefinitionType:
-        #     print("%" + str(intern_field["keyword"]) + str(intern_field["name"]), end='')
-        #     if intern_field["options"] is not None:
-        #         print(str(intern_field["options"]), end='')
-        #     print(str(intern_field["body"]), end='')
-
-        # elif intern_field["block_type"] == BlockTypes.MacroConditionType:
-        #     print("%{" + str(intern_field["condition"]) + str(intern_field["name"]) + ':' + str(intern_field["content"]) + '}' + str(intern_field["ending"]), end='')
-
-        # elif intern_field["block_type"] == BlockTypes.ConditionType:
-        #     if intern_field["keyword"] is not None and intern_field["expression"] is not None:
-        #         print("%" + str(intern_field["keyword"]) + str(intern_field["expression"]), end='')
-        #     print_field(intern_field["content"])
-        #     if intern_field["else_keyword"] is not None and intern_field["else_body"] is not None:
-        #         print("%" + str(intern_field["else_keyword"]), end='')
-        #         print_field(intern_field["else_body"])
-        #     print("%" + str(intern_field["end_keyword"]), end='')
-
-        if intern_field["next"] != None:
-            print_field(intern_field["next"])
-    
     return
 
 
-def remove_empty_fields(Specfile):
+def remove_empty_fields(Specfile):  # TODO
     
     reduced_Specfile = deepcopy(Specfile)
 

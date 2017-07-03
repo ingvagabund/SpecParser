@@ -30,17 +30,7 @@ keys_list = [
 
 class SpecfileClass(object):
 
-    def __init__(self, type):
+    def __init__(self):
         self.beginning = ""
-
-        if type == 'Parser':
-            self.block_list = []
-
-        elif type == 'AbstractModel':
-            self.headerTags = []
-            self.sectionTags = []
-            self.macroDefinitions = []
-            self.macroConditions = []
-            self.macroUndefinitions = []
-            self.comments = []
-            self.conditions = []
+        self.end = ""
+        self.block_list = []

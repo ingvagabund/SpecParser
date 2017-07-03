@@ -12,7 +12,7 @@ class Block(object):
         self.block_type = type
 
 
-Specfile = SpecfileClass('Parser')
+Specfile = SpecfileClass()
 
 
 def open_file(input_filepath):
