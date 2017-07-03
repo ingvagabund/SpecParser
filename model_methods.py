@@ -98,7 +98,6 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
                 created_block = remove_blocktype(create_metastring(single_block, single_block['block_type']))
                 created_block['metastring'] += '%4'
                 Specfile.block_list.append(created_block)
-                # Specfile.block_list.append(create_metastring(single_block, single_block['block_type']))
 
         # Macro Definition
         elif single_block['block_type'] == BlockTypes.MacroDefinitionType:
@@ -120,9 +119,9 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
         elif single_block['block_type'] == BlockTypes.ConditionType:
             Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
             count = len(Specfile.block_list)
-            if single_block['content'] != []:
+            if 'content' in single_block and single_block['content'] != []:
                 json_to_specfile_class(single_block['content'], predicate_list + [[single_block['expression'], 1]])
-            if single_block['else_body'] != []:
+            if 'else_body' in single_block and single_block['else_body'] != []:
                 json_to_specfile_class(single_block['else_body'], predicate_list + [[single_block['expression'], 0]])
             Specfile.block_list = Specfile.block_list[:count]
             
@@ -187,7 +186,7 @@ def print_field(block_list):
 
                     print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
 
-                    if int(metastring[0]) == 0 and intern_field['option'] == None:
+                    if int(metastring[0]) == 0 and ('option' not in intern_field or intern_field['option'] == None):
                         print(':', end='')
                     elif int(metastring[0]) == 1:
                         print('):', end='')
@@ -264,13 +263,34 @@ def print_field(block_list):
     return
 
 
-def remove_empty_fields(Specfile):  # TODO
+def reduce_inner_block(single_block):
+    
+    reduced_single_block = deepcopy(single_block)
+    
+    if isinstance(single_block, dict):
+        for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
+            if value is None or value == []:
+                reduced_single_block.pop(reduced_attr, None)
+            elif (isinstance(value, dict) or isinstance(value, list)) and attr != 'AP':
+                reduce_inner_block(value)
+
+    return reduced_single_block               
+
+
+def remove_empty_fields(Specfile):
     
     reduced_Specfile = deepcopy(Specfile)
 
-    for attr, value in Specfile.__dict__.iteritems():
-        if value == []:
-            delattr(reduced_Specfile, attr)
+    for (single_block, reduced_single_block) in zip(Specfile.block_list, reduced_Specfile.block_list):
+        for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
+            if value == None or value == []:
+                reduced_single_block.pop(attr, None)
+            elif isinstance(value, dict):
+                reduced_single_block = reduce_inner_block(single_block)
+            elif isinstance(value, list):
+                for (single_record, reduced_single_record) in zip(value, reduced_value):
+                    reduced_single_record = reduce_inner_block(single_record)
+                    
 
     return reduced_Specfile
 

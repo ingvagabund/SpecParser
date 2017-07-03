@@ -1,1 +1,1 @@
-{"beginning": "", "block_list": [{"block_type": 0, "content": "eject", "key": "Name", "metastring": "%0 %2\n", "option": null}, {"block_type": 0, "content": "3.1.2", "key": "Version", "metastring": "%0 %2\n", "option": null}], "end": ""}
+{"beginning": "", "block_list": [{"block_type": 0, "content": "eject", "key": "Name", "metastring": "%0 %2\n"}, {"block_type": 0, "content": "3.1.2", "key": "Version", "metastring": "%0 %2\n"}], "end": ""}
