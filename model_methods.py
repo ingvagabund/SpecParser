@@ -119,7 +119,16 @@ def create_abstract_model(input_filepath):
 
 
 
-def pretty_print_block(intern_field, block_type):
+def print_indentation(indentation):
+    
+    for i in range(indentation):
+        print(' ', end='')
+
+
+
+def pretty_print_block(intern_field, block_type, indentation):
+    
+    print_indentation(indentation)
     
     if block_type == BlockTypes.HeaderTagType:
         print(intern_field['key'], end='')
@@ -188,17 +197,19 @@ def pretty_print_block(intern_field, block_type):
         print('%' + intern_field['keyword'] + ' ', end='')
         print(intern_field['expression'] + '\n', end='')
         if 'content' in intern_field and intern_field['content'] is not None:
-            print_pretty_field(intern_field['content'])
+            print_pretty_field(intern_field['content'], indentation + 2)
         if 'else_keyword' in intern_field and intern_field['else_keyword'] is not None:
+            print_indentation(indentation)
             print("%" + intern_field['else_keyword'] + '\n', end='')
         if 'else_body' in intern_field and intern_field['else_body'] is not None:
-            print_pretty_field(intern_field['else_body'])
-        print('%' + intern_field['end_keyword'] + '\n', end='')
+            print_pretty_field(intern_field['else_body'], indentation + 2)
+        print_indentation(indentation)
+        print('%' + intern_field['end_keyword'] + '\n\n', end='')
 
     return
 
 
-def print_pretty_field(block_list):
+def print_pretty_field(block_list, indentation):
     
     if block_list is None:
         return
@@ -210,7 +221,7 @@ def print_pretty_field(block_list):
  
         for intern_field in block_list:
             if intern_field != None and intern_field['block_type'] == block_type:
-                pretty_print_block(intern_field, block_type)
+                pretty_print_block(intern_field, block_type, indentation)
                 printed = True
 
         if printed:
@@ -237,7 +248,7 @@ def class_to_specfile(intern_specfile, pretty): # TODO pretty print
 
     else:
         if intern_specfile.block_list != []:
-            print_pretty_field(intern_specfile.block_list)        
+            print_pretty_field(intern_specfile.block_list, 0)        
 
     return
 
