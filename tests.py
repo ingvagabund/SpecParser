@@ -8,18 +8,20 @@ def run_tests():
     tests_descriptions = [  
         "TESTING TRANSFORMATION OF SPECFILE TO SPECFILE CLASS JSON REPRESENTATION",
         "TESTING TRANSFORMATION OF SPECFILE CLASS TO SPECFILE",
-        "TESTING TRANSFORMATION OF JSON INPUT TO SPECFILE"
+        "TESTING TRANSFORMATION OF JSON INPUT TO SPECFILE",
+        "TESTING TRANSFORMATION OF SPECFILE CLASS TO PRETTY PRINTED SPECFILE"
     ]
 
     arguments = [
-        '-j 1 -s 0',
-        '-j 0 -s 1',
-        '-j 0 -s 1'
+        '-j 1 -s 0 -p 0',
+        '-j 0 -s 1 -p 0',
+        '-j 0 -s 1 -p 0',
+        '-j 0 -s 1 -p 1'
     ]
 
     testing_specfiles = os.listdir(os.curdir + '/Tests/Inputs')
     reference_output_folders = os.listdir(os.curdir + '/Tests/RefOutputs')
-    failures = 0    
+    failures = 0
 
     for testing_set in range(len(reference_output_folders)):
 
@@ -43,10 +45,10 @@ def run_tests():
             
             intro = 'TEST ' + str(test_number) + ': '
 
-            if testing_set > 0:
-                reference_output_path = './Tests/Inputs/' + specfile_filename
-            else:
+            if testing_set == 0 or testing_set == 3:
                 reference_output_path = './Tests/RefOutputs/' + str(testing_set) + '/' + specfile_filename
+            else:
+                reference_output_path = './Tests/Inputs/' + specfile_filename
 
             if filecmp.cmp('./Tests/Outputs/' + str(testing_set) + '/' + specfile_filename, reference_output_path, False):
                 sys.stdout.write(intro + "\033[0;32m" + "SUCCESS!\n" + "\033[0;0m")

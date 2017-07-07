@@ -4,6 +4,10 @@ import ctypes
 
 
 
+prettyprint_headervalue_position = 16
+prettyprint_macroname_position = 20
+
+
 class BlockTypes(object):
 
     HeaderTagType = 0
@@ -34,3 +38,4 @@ class SpecfileClass(object):
         self.beginning = ""
         self.end = ""
         self.block_list = []
+        self.metastring = ""

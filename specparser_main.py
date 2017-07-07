@@ -4,7 +4,7 @@ import argparse
 
 # from specparser import parse_specfile
 from tests import run_tests
-from model_methods import create_abstract_model, class_to_specfile, remove_empty_fields, process_config_file
+from model_methods import *
 
 
 def parse_arguments():
@@ -51,7 +51,7 @@ def process_args(args):
     else:
         specpath = None
 
-    Specfile = create_abstract_model(specpath)
+    create_abstract_model(specpath)
 
     # args.config is set => apply changes from given configuration file on specfile
     if args.config:

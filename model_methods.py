@@ -2,17 +2,14 @@ from __future__ import print_function
 import json
 from copy import deepcopy
 
-from abstract_model import BlockTypes, SpecfileClass, keys_list
+from abstract_model import *
 from specparser import parse_file, open_file
 
 
-def extern_json_to_specfile_class(json_containing_parsed_spec):
 
-    for key in json_containing_parsed_spec:
-        if key != 'beginning' and key != 'end':
-            setattr(Specfile, key, json_containing_parsed_spec[key])
+Specfile = SpecfileClass()
+metastring_list = []
 
-    return
 
 
 def remove_blocktype(single_block):
@@ -36,6 +33,7 @@ def get_whitespace(current_string, order):
     return metastring
 
 
+
 def create_metastring(single_block, block_type):
 
     metastring = ""
@@ -45,7 +43,7 @@ def create_metastring(single_block, block_type):
         if key in single_block:
 
             if isinstance(single_block[key], dict):
-                create_metastring(single_block[key], single_block[key]['block_type'])
+                metastring += create_metastring(single_block[key], single_block[key]['block_type'])
 
                 if 'keyword' in single_block and single_block['keyword'] == 'package':
                     metastring += '%' + str(i)
@@ -57,24 +55,20 @@ def create_metastring(single_block, block_type):
                             if isinstance(record, basestring):
                                 metastring += get_whitespace(record, i)
                                 single_block[key][j] = record.strip()
-                    metastring = metastring
                 else:
                     if single_block[key] is not None:
                         metastring += get_whitespace(single_block[key], i)
                         single_block[key] = single_block[key].strip()
 
-                if 'metastring' in single_block and len(single_block['metastring']) > len(metastring):
-                    return single_block
+                # if 'metastring' in single_block and len(single_block['metastring']) > len(metastring):
+                #     return single_block
 
-                single_block['metastring'] = metastring
+    return metastring
 
-    return single_block
 
 
 def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
     
-    global Specfile
-
     if json_containing_parsed_spec is None:
         return
 
@@ -82,102 +76,99 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
         if predicate_list != []:
             single_block['AP'] = predicate_list
 
-        # Header Tag
-        if single_block['block_type'] == BlockTypes.HeaderTagType:
-            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
+        Specfile.metastring += '#' + create_metastring(single_block, single_block['block_type'])
+        # Specfile.metastring += '#' + str(id(single_block)) + create_metastring(single_block, single_block['block_type'])
 
-        # Section Tag
-        elif single_block['block_type'] == BlockTypes.SectionTagType:
-            if 'package' not in single_block['keyword']:
-                Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-            else:
-                if single_block['content'] != []:
-                    count = len(Specfile.block_list)
-                    json_to_specfile_class(single_block['content'], predicate_list)
-                    Specfile.block_list = Specfile.block_list[:count]
-                created_block = remove_blocktype(create_metastring(single_block, single_block['block_type']))
-                created_block['metastring'] += '%4'
-                Specfile.block_list.append(created_block)
-
-        # Macro Definition
-        elif single_block['block_type'] == BlockTypes.MacroDefinitionType:
-            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-
-        # Macro Condition
-        elif single_block['block_type'] == BlockTypes.MacroConditionType:
-            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-        
-        # Macro Undefinition
-        elif single_block['block_type'] == BlockTypes.MacroUndefinitionType:
-            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
-
-        # Commentary
-        elif single_block['block_type'] == BlockTypes.CommentType:
-            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
+        # Section Tag, package section
+        if single_block['block_type'] == BlockTypes.SectionTagType and 'package' in single_block['keyword']:
+            Specfile.metastring += '%4'
+            if single_block['content'] != []:
+                count = len(Specfile.block_list)
+                json_to_specfile_class(single_block['content'], predicate_list)
+                Specfile.block_list = Specfile.block_list[:count]
+            created_block = remove_blocktype(single_block)
+            Specfile.block_list.append(created_block)
         
         # Condition
         elif single_block['block_type'] == BlockTypes.ConditionType:
-            Specfile.block_list.append(remove_blocktype(create_metastring(single_block, single_block['block_type'])))
+            Specfile.block_list.append(remove_blocktype(single_block))
             count = len(Specfile.block_list)
             if 'content' in single_block and single_block['content'] != []:
                 json_to_specfile_class(single_block['content'], predicate_list + [[single_block['expression'], 1]])
             if 'else_body' in single_block and single_block['else_body'] != []:
                 json_to_specfile_class(single_block['else_body'], predicate_list + [[single_block['expression'], 0]])
             Specfile.block_list = Specfile.block_list[:count]
-            
-Specfile = SpecfileClass()
+
+        else:
+            Specfile.block_list.append(remove_blocktype(single_block))
+
 
 
 def create_abstract_model(input_filepath):
 
-    global Specfile
-        
     json_containing_parsed_spec = json.loads(parse_file(input_filepath))
 
-    if isinstance(json_containing_parsed_spec['beginning'], basestring):
-        Specfile.beginning = json_containing_parsed_spec['beginning']
-    else:
-        Specfile.beginning = {'content': json_containing_parsed_spec['beginning']['content']}        
-    Specfile.end = json_containing_parsed_spec['end'];
+    Specfile.beginning = json_containing_parsed_spec['beginning']
+    Specfile.metastring = json_containing_parsed_spec['metastring']
+    Specfile.end = json_containing_parsed_spec['end']
 
-    if 'block_list' in json_containing_parsed_spec:
+    if 'metastring' in json_containing_parsed_spec and json_containing_parsed_spec['metastring'] != "":
+        Specfile.block_list = json_containing_parsed_spec['block_list']
+    else:
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
 
-    else:
-        extern_json_to_specfile_class(json_containing_parsed_spec)
-
-    return Specfile
 
 
 def pretty_print_block(intern_field, block_type):
     
     if block_type == BlockTypes.HeaderTagType:
         print(intern_field['key'], end='')
+        length = len(intern_field['key']) + 1
+
         if 'option' in intern_field and intern_field['option'] is not None:
             print("(" + intern_field['option'] + ")", end='')
-        print(':' + intern_field['content'] + '\n', end='')
+            length += 2 + len(intern_field['option'])
+
+        print(':', end='')
+
+        if length >= prettyprint_headervalue_position:
+            length = prettyprint_headervalue_position - 2
+        for i in range(prettyprint_headervalue_position - length):
+            print(' ', end='')
+
+        print(intern_field['content'] + '\n', end='')
 
     elif block_type == BlockTypes.SectionTagType:
         print('%' + intern_field['keyword'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
-            print(" " + intern_field['name'] + " ", end='')
+            print(" " + intern_field['name'], end='')
         if 'parameters' in intern_field and intern_field['parameters'] is not None:
-            print(" -" + intern_field['parameters'] + " ", end='')
+            print(" -" + intern_field['parameters'], end='')
         if 'subname' in intern_field and intern_field['subname'] is not None:
-            print(" " + intern_field['subname'] + " ", end='')
+            print(" " + intern_field['subname'], end='')
         if not isinstance(intern_field['content'], list):
             print('\n' + intern_field['content'] + '\n\n', end='')
         else:
             for record in intern_field['content']:
-                print(record + '\n', end='')
+                print('\n' + str(record) + '\n', end='')
        
     elif block_type == BlockTypes.MacroDefinitionType:
         print('%' + intern_field['keyword'], end='')
+        length = len(intern_field['keyword']) + 1
+
         if 'name' in intern_field and intern_field['name'] is not None:
-            print(" " + intern_field['name'] + " ", end='')
+            print(" " + intern_field['name'], end='')
+            length += len(intern_field['name']) + 1
         if 'options' in intern_field and intern_field['options'] is not None:
-            print(" -" + intern_field['options'] + " ", end='')
-        print(' ' + intern_field['body'] + '\n', end='')
+            print(" -" + intern_field['options'], end='')
+            length += len(intern_field['options']) + 1
+
+        if length >= prettyprint_macroname_position:
+            length = prettyprint_macroname_position - 1
+        for i in range(prettyprint_macroname_position - length):
+            print(' ', end='')
+
+        print(intern_field['body'] + '\n', end='')
        
     elif block_type == BlockTypes.MacroConditionType:
         print('{' + intern_field['condition'], end='')
@@ -214,7 +205,7 @@ def print_pretty_field(block_list):
 
     block_types_list = [a for a in dir(BlockTypes) if not a.startswith('__')]
 
-    for block_type in range(len(block_types_list)):
+    for block_type in [5, 2, 0, 1, 3, 4, 6]:
         printed = False
  
         for intern_field in block_list:
@@ -230,11 +221,16 @@ def print_pretty_field(block_list):
 
 # specfile class to specfile reconstruction - main
 def class_to_specfile(intern_specfile, pretty): # TODO pretty print
-    
+
+    global metastring_list
+
     if not pretty:
         print(str(intern_specfile.beginning), end='')
 
         if intern_specfile.block_list != []:
+            metastring_list = Specfile.metastring.split('#')
+            print(metastring_list[0], end='')
+            metastring_list = metastring_list[1:]
             print_field(intern_specfile.block_list)
     
         print(str(intern_specfile.end), end='')
@@ -248,17 +244,20 @@ def class_to_specfile(intern_specfile, pretty): # TODO pretty print
 
 # specfile class to specfile reconstruction - subprocedure
 def print_field(block_list):
+    
+    global metastring_list
 
     if block_list is None:
         return
 
     for intern_field in block_list:
-        if intern_field != None:
-            metastring_list = intern_field['metastring'].split('%')
-            print(metastring_list[0], end='')
+        if intern_field is not None and metastring_list is not None:
+            metastring_block_list = metastring_list[0].split('%')
+            metastring_list = metastring_list[1:]
+            print(metastring_block_list[0], end='')            
 
             if intern_field['block_type'] == BlockTypes.HeaderTagType:
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 1:
                         print('(', end='')
 
@@ -274,7 +273,7 @@ def print_field(block_list):
             elif intern_field['block_type'] == BlockTypes.SectionTagType:
                 counter = 0
 
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 0:
                         print('%', end='')
                     elif int(metastring[0]) == 2:
@@ -292,7 +291,7 @@ def print_field(block_list):
                     print(metastring[1:], end='')
         
             elif intern_field['block_type'] == BlockTypes.MacroDefinitionType:
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 0:
                         print('%', end='')
 
@@ -300,7 +299,7 @@ def print_field(block_list):
                     print(metastring[1:], end='')
 
             elif intern_field['block_type'] == BlockTypes.MacroConditionType:
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 0:
                         print('%{', end='')
                     elif int(metastring[0]) == 2:
@@ -312,7 +311,7 @@ def print_field(block_list):
                     print(metastring[1:], end='')
 
             elif intern_field['block_type'] == BlockTypes.MacroUndefinitionType:
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 0:
                         print('%', end='')
 
@@ -320,12 +319,12 @@ def print_field(block_list):
                     print(metastring[1:], end='')
 
             elif intern_field['block_type'] == BlockTypes.CommentType:
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
                     print(metastring[1:], end='')
 
             elif intern_field['block_type'] == BlockTypes.ConditionType:
-                for metastring in metastring_list[1:]:
+                for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) in [0, 3, 5]:
                         print('%', end='')
 
