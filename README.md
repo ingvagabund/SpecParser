@@ -13,30 +13,30 @@ Supported specfile fields:
 
     1 HEADER TAGS
 
-    1.1 header tags in format "[KEY]:[VALUE]", where KEY is one of the 
+    1.1 header tags in format "[TAG]:[VALUE]", where TAG is one of the 
     following:
         NAME, VERSION, RELEASE, SUMMARY, LICENSE, URL, PREFIX, GROUP, 
         BUILDROOT, EXCLUDEARCH, EXCLUSIVEARCH, CONFLICTS, BUILDARCH, PROVIDES,
         PREP, PRE, PREUN, POST, POSTUN, BUILDREQUIRES, REQUIRES, SOURCE, PATCH
 
-    1.2 header tags in format "[KEY]([MODIFIER]):[VALUE]", where KEY is one of
+    1.2 header tags in format "[TAG]([MODIFIER]):[VALUE]", where TAG is one of
     the following:
         BUILDREQUIRES, REQUIRES  
 
-    1.3 header tags in format "[KEY][SEQUENCE_NUMBER]:[VALUE]", where KEY is 
+    1.3 header tags in format "[TAG][SEQUENCE_NUMBER]:[VALUE]", where TAG is 
     one of the following:
         SOURCE, PATCH
 
     2 SECTION TAGS
 
-    2.1 sections in format "%[KEY] [NAME]? (-[PARAMETERS])? [SUBNAME]?\n[VALUE]",
-    where KEY is one of the following: 
+    2.1 sections in format "%[SECTION_HEADER] [NAME]? (-[PARAMETERS])? [SUBNAME]?\n[SECTION]",
+    where SECTION_HEADER is one of the following: 
         DESCRIPTION, PREP, BUILD, CHECK, INSTALL, PREUN, PRE, POSTUN, POST,
         FILES
 
-    2.2 sections in format "%PACKAGE (-[PARAMETERS])? [NAME]?\n[VALUE]"
+    2.2 sections in format "%PACKAGE (-[PARAMETERS])? [NAME]?\n[SECTION]"
         
-    2.3 sections in format "%CHANGELOG\n[VALUE]"
+    2.3 sections in format "%CHANGELOG\n[SECTION]"
 
     3 COMMENTS
 
