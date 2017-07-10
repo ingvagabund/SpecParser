@@ -33,9 +33,12 @@ keys_list = [
 
 
 class SpecfileClass(object):
+    
+    def __init__(self, type):
 
-    def __init__(self):
-        self.beginning = ""
-        self.end = ""
         self.block_list = []
         self.metastring = ""
+
+        if type == 'Parser':
+            self.beginning = ""
+            self.end = ""

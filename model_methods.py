@@ -7,7 +7,7 @@ from specparser import parse_file, open_file
 
 
 
-Specfile = SpecfileClass()
+Specfile = SpecfileClass('AbstractModel')
 metastring_list = []
 
 
@@ -108,14 +108,14 @@ def create_abstract_model(input_filepath):
 
     json_containing_parsed_spec = json.loads(parse_file(input_filepath))
 
-    Specfile.beginning = json_containing_parsed_spec['beginning']
-    Specfile.metastring = json_containing_parsed_spec['metastring']
-    Specfile.end = json_containing_parsed_spec['end']
-
     if 'metastring' in json_containing_parsed_spec and json_containing_parsed_spec['metastring'] != "":
         Specfile.block_list = json_containing_parsed_spec['block_list']
+        Specfile.metastring = json_containing_parsed_spec['metastring']
     else:
+        Specfile.metastring += json_containing_parsed_spec['beginning']
+        Specfile.metastring + json_containing_parsed_spec['metastring']
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
+        Specfile.metastring += json_containing_parsed_spec['end']        
 
 
 
@@ -236,15 +236,11 @@ def class_to_specfile(intern_specfile, pretty): # TODO pretty print
     global metastring_list
 
     if not pretty:
-        print(str(intern_specfile.beginning), end='')
-
         if intern_specfile.block_list != []:
             metastring_list = Specfile.metastring.split('#')
             print(metastring_list[0], end='')
             metastring_list = metastring_list[1:]
             print_field(intern_specfile.block_list)
-    
-        print(str(intern_specfile.end), end='')
 
     else:
         if intern_specfile.block_list != []:
@@ -262,7 +258,7 @@ def print_field(block_list):
         return
 
     for intern_field in block_list:
-        if intern_field is not None and metastring_list is not None:
+        if intern_field is not None and metastring_list != []:
             metastring_block_list = metastring_list[0].split('%')
             metastring_list = metastring_list[1:]
             print(metastring_block_list[0], end='')            
