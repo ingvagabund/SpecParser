@@ -2,11 +2,12 @@
 
 
 Runnable with commands:
-    - make (runs specfile parsing, the path to specfile is prompted in the command line)
-    - make SPEC="path_to_specfile" (runs specfile parsing on the file 'path_to_specfile')
-    - make test (runs available tests on the implementation of the specfile parser)
-    - python specparser.py (same as "make")
-    - python specparser.py -i path_to_specfile (same as "make SPEC='path_to_specfile'")
+
+- make (runs specfile parsing, the path to specfile is prompted in the command line)
+- make SPEC="path_to_specfile" (runs specfile parsing on the file 'path_to_specfile')
+- make test (runs available tests on the implementation of the specfile parser)
+- python specparser.py (same as "make")
+- python specparser.py -i path_to_specfile (same as "make SPEC='path_to_specfile'")
 
 
 Supported specfile fields:
