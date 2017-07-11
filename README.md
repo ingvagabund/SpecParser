@@ -16,9 +16,10 @@ Supported specfile fields:
 
     1.1 header tags in format "[TAG]:[VALUE]", where TAG is one of the 
     following:
-        NAME, VERSION, RELEASE, SUMMARY, LICENSE, URL, PREFIX, GROUP, 
-        BUILDROOT, EXCLUDEARCH, EXCLUSIVEARCH, CONFLICTS, BUILDARCH, PROVIDES,
-        PREP, PRE, PREUN, POST, POSTUN, BUILDREQUIRES, REQUIRES, SOURCE, PATCH
+        BUILDARCH, BUILDREQUIRES, BUILDROOT, CONFLICTS, EXCLUDEARCH, 
+        EXCLUSIVEARCH, GROUP, LICENSE, NAME, PATCH, PRE, PREFIX, PREP, PREUN,
+        POST, POSTUN, PROVIDES, RELEASE, REQUIRES, SOURCE, SUMMARY, URL,
+        VERSION
 
     1.2 header tags in format "[TAG]([MODIFIER]):[VALUE]", where TAG is one of
     the following:
@@ -32,8 +33,7 @@ Supported specfile fields:
 
     2.1 sections in format "%[SECTION_HEADER] [NAME]? (-[PARAMETERS])? [SUBNAME]?\n[SECTION]",
     where SECTION_HEADER is one of the following: 
-        DESCRIPTION, PREP, BUILD, CHECK, INSTALL, PREUN, PRE, POSTUN, POST,
-        FILES
+        BUILD, CHECK, CLEAN, DESCRIPTION, FILES, INSTALL, PRE, PREP, PREUN, POST, POSTUN
 
     2.2 sections in format "%PACKAGE (-[PARAMETERS])? [NAME]?\n[SECTION]"
         
@@ -51,7 +51,7 @@ Supported specfile fields:
 
     5.1 macro undefinitions in format: "%undefine [NAME]"
 
-    6 MACRO CONDITIONS
+    6 CONDITIONAL MACROS
     
     6.1 macros used in a condition in format: "{!?[NAME]:[BODY]}" or
     "{?[NAME]:[BODY]}"
@@ -61,6 +61,6 @@ Supported specfile fields:
     7.1 conditions in format: "%[KEYWORD] [CONDITION]\n[BODY] %endif" or 
     "%[KEYWORD] [CONDITION]\n[BODY] %else [ELSE_BODY]) %endif", where KEYWORD
     is one of the following:
-        if, ifarch, ifos, ifnarch, ifnos
+        if, ifarch, ifnarch, ifos, ifnos
 
 All keywords are not case sensitive.
