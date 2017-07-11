@@ -7,7 +7,7 @@ from specparser import parse_file, open_file
 
 
 
-Specfile = SpecfileClass('AbstractModel')
+Specfile = SpecfileClass('Specfile 1.0')
 metastring_list = []
 
 
@@ -214,8 +214,6 @@ def print_pretty_field(block_list, indentation):
     if block_list is None:
         return
 
-    block_types_list = [a for a in dir(BlockTypes) if not a.startswith('__')]
-
     for block_type in [5, 2, 0, 1, 3, 4, 6]:
         printed = False
  
@@ -365,18 +363,33 @@ def remove_empty_fields(Specfile):
     
     reduced_Specfile = deepcopy(Specfile)
 
-    for (single_block, reduced_single_block) in zip(Specfile.block_list, reduced_Specfile.block_list):
-        for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
-            if value == None or value == []:
-                reduced_single_block.pop(attr, None)
-            elif isinstance(value, dict):
-                reduced_single_block = reduce_inner_block(single_block)
-            elif isinstance(value, list):
-                for (single_record, reduced_single_record) in zip(value, reduced_value):
-                    reduced_single_record = reduce_inner_block(single_record)
-                    
+    # Specfile 2.0 abstract model
+    if not hasattr(Specfile, 'block_list'):
+        for (block_list, reduced_block_list) in zip(Specfile.__dict__.iteritems(), reduced_Specfile.__dict__.iteritems(),):
+            if block_list[1] == None or block_list[1] == []:
+                delattr(reduced_Specfile, block_list[0]) 
 
+    # # Specfile 1.0 abstract model
+    else:
+        for (single_block, reduced_single_block) in zip(Specfile.block_list, reduced_Specfile.block_list):
+            for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
+                if value == None or value == []:
+                    reduced_single_block.pop(attr, None)
+                elif isinstance(value, dict):
+                    reduced_single_block = reduce_inner_block(single_block)
+                elif isinstance(value, list):
+                    for (single_record, reduced_single_record) in zip(value, reduced_value):
+                        reduced_single_record = reduce_inner_block(single_record)
+                    
     return reduced_Specfile
+
+
+def print_json_representation(Specfile, reduced):
+
+    if reduced:
+        print(json.dumps(remove_empty_fields(Specfile), default=lambda o: o.__dict__, sort_keys=True))
+    else:
+        print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
 
 
 def process_config_file(Specfile, config_path):

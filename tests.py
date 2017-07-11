@@ -9,14 +9,16 @@ def run_tests():
         "TESTING TRANSFORMATION OF SPECFILE TO SPECFILE CLASS JSON REPRESENTATION",
         "TESTING TRANSFORMATION OF SPECFILE CLASS TO SPECFILE",
         "TESTING TRANSFORMATION OF JSON INPUT TO SPECFILE",
-        "TESTING TRANSFORMATION OF SPECFILE CLASS TO PRETTY PRINTED SPECFILE"
+        "TESTING TRANSFORMATION OF SPECFILE CLASS TO PRETTY PRINTED SPECFILE",
+        "TESTING TRANSFORMATION OF SPECFILE TO SPECFILE CLASS 2.0 JSON REPRESENTATION"
     ]
 
     arguments = [
-        '-j 1 -s 0 -p 0',
-        '-j 0 -s 1 -p 0',
-        '-j 0 -s 1 -p 0',
-        '-j 0 -s 1 -p 1'
+        '-j 1 -s 0 -p 0 -m 1',
+        '-j 0 -s 1 -p 0 -m 1',
+        '-j 0 -s 1 -p 0 -m 1',
+        '-j 0 -s 1 -p 1 -m 1',
+        '-j 1 -s 0 -p 0'
     ]
 
     testing_specfiles = os.listdir(os.curdir + '/Tests/Inputs')
@@ -45,7 +47,7 @@ def run_tests():
             
             intro = 'TEST ' + str(test_number) + ': '
 
-            if testing_set == 0 or testing_set == 3:
+            if testing_set in [0, 3, 4]:
                 reference_output_path = './Tests/RefOutputs/' + str(testing_set) + '/' + specfile_filename
             else:
                 reference_output_path = './Tests/Inputs/' + specfile_filename

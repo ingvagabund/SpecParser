@@ -36,9 +36,21 @@ class SpecfileClass(object):
     
     def __init__(self, type):
 
+        if type == 'Specfile 2.0':
+            self.HeaderTags = []
+            self.SectionTags = []
+            self.MacroDefinitions = []
+            self.MacroConditions = []
+            self.MacroUndefinitions = []
+            self.Comments = []
+            self.Conditions = []
+            self.metastring = ""
+            return
+
         self.block_list = []
         self.metastring = ""
 
         if type == 'Parser':
             self.beginning = ""
             self.end = ""
+            

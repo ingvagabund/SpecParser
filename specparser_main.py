@@ -5,6 +5,7 @@ import argparse
 # from specparser import parse_specfile
 from tests import run_tests
 from model_methods import *
+from model_2_methods import create_spec_2_model, Specfile2
 
 
 def parse_arguments():
@@ -33,6 +34,9 @@ def parse_arguments():
     arg_parser.add_argument('-p', '--pretty-print', dest="pretty", type=int, choices=[0,1], default=0,
                             help="output specfile in a normalized form")
 
+    arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1,2], default=2,
+                            help="choose between specfile 1.0 and 2.0 abstract models")
+
     return arg_parser.parse_args()
 
 
@@ -53,20 +57,31 @@ def process_args(args):
 
     create_abstract_model(specpath)
 
-    # args.config is set => apply changes from given configuration file on specfile
-    if args.config:
-        process_config_file(Specfile, args.config)
-
-    # args.json is set => read and process input specfile, write output in json 
-    if args.json:
-        if args.reduced:
-            print(json.dumps(remove_empty_fields(Specfile), default=lambda o: o.__dict__, sort_keys=True))
-        else:
-            print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
-
     # args.specfile is set => read and process input specfile, write output as a specfile 
     if args.specfile:
         class_to_specfile(Specfile, args.pretty)
+
+    # args.model is set to 1 => output json in specfile 1.0 form
+    if args.model and args.model == 1:
+
+        # args.config is set => apply changes from given configuration file on specfile
+        if args.config:
+            process_config_file(Specfile, args.config)
+
+    # args.model is not set or set to 2 => output specfile or json in specfile 2.0 form
+    else:
+        create_spec_2_model(Specfile)
+
+        # args.config is set => apply changes from given configuration file on specfile
+        # if args.config:
+        #     process_config_file(Specfile, args.config)
+
+    # args.json is set => read and process input specfile, write output in json
+    if args.json:
+        if args.model and args.model == 1:
+            print_json_representation(Specfile, args.reduced)
+        else:
+            print_json_representation(Specfile2, args.reduced)
 
 
 
