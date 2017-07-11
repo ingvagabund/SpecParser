@@ -5,7 +5,6 @@ Summary: java source to bytecode compiler
 License: IBM Public License, http://ibm.com/developerworks/oss/license10.html
 Group: Development/Languages
 Name: jikes
-Prefix: /usr
 Provides: jikes
 Release: 1
 Source: jikes-%{version}.tar.gz

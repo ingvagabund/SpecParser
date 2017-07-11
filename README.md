@@ -17,7 +17,7 @@ Supported specfile fields:
     1.1 header tags in format "[TAG]:[VALUE]", where TAG is one of the 
     following:
         BUILDARCH, BUILDREQUIRES, BUILDROOT, CONFLICTS, EXCLUDEARCH, 
-        EXCLUSIVEARCH, GROUP, LICENSE, NAME, PATCH, PRE, PREFIX, PREP, PREUN,
+        EXCLUSIVEARCH, GROUP, LICENSE, NAME, PATCH, PRE, PREUN,
         POST, POSTUN, PROVIDES, RELEASE, REQUIRES, SOURCE, SUMMARY, URL,
         VERSION
 

@@ -12,8 +12,7 @@ Header tags may contain the following keywords:
 * `GROUP`, `LICENSE`, `NAME`, `RELEASE`, `URL`, `VERSION`, `SUMMARY`
 * `PATCH`, `SOURCE`
 * `PRE`, `PREUN`, `POST`, `POSTUN`
-* `PREFIX`
-* `PREP`
+
 
 Syntax of header tags can be found here: http://wiki.rosalab.ru/en/index.php/RPM_spec_file_syntax#Spec_Header
 

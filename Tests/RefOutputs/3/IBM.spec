@@ -13,7 +13,6 @@ Name:           %{name}
 Version:        %{version}
 Release:        %{release}
 Source:         %{name}-%{version}.tar.gz
-Prefix:         /usr
 Group:          Development/Tools
 
 %description

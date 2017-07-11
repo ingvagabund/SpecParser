@@ -195,7 +195,7 @@ def pretty_print_block(intern_field, block_type, indentation):
 
     elif block_type == BlockTypes.ConditionType:
         print('%' + intern_field['keyword'] + ' ', end='')
-        print(intern_field['expression'] + '\n', end='')
+        print(intern_field['expression'] + '\n\n', end='')
         if 'content' in intern_field and intern_field['content'] is not None:
             print_pretty_field(intern_field['content'], indentation + 2)
         if 'else_keyword' in intern_field and intern_field['else_keyword'] is not None:
@@ -224,7 +224,7 @@ def print_pretty_field(block_list, indentation):
                 pretty_print_block(intern_field, block_type, indentation)
                 printed = True
 
-        if printed:
+        if printed and block_type != 6:
             print('\n', end='')
     
     return
