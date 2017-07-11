@@ -2,12 +2,11 @@
 
 The main aim of this tool is to create a specfile abstract model, called 
 Specfile 2.0. The Specfile 2.0 model is a simplified model of specfiles,
-abstacting the order of fields written in specfile as well as the formatting
-and the whitespace characters used in the original specfile. 
+abstracting the order of fields written in specfile as well as the formatting
+and the whitespace characters used in the original specfile.
 
 SpecParser aims to:
-* simplify (and standardize) specfile structure by restricting the range of supported fields and keywords
-* create a standardized form of specfiles for easier reading and orientation in different specfiles 
+* simplify (and restrict) specfile structure by restricting the range of supported fields and keywords
 * simplify specfile editting by offering a wide range of functions manipulating the Specfile 2.0 model 
 
 ## List of supported specfile fields:
