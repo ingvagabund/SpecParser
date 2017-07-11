@@ -1,4 +1,16 @@
-List of supported specfile fields:
+# SpecParser
+
+The main aim of this tool is to create a specfile abstract model, called 
+Specfile 2.0. The Specfile 2.0 model is a simplified model of specfiles,
+abstacting the order of fields written in specfile as well as the formatting
+and the whitespace characters used in the original specfile. 
+
+SpecParser aims to:
+* simplify (and standardize) specfile structure by restricting the range of supported fields and keywords
+* create a standardized form of specfiles for easier reading and orientation in different specfiles 
+* simplify specfile editting by offering a wide range of functions manipulating the Specfile 2.0 model 
+
+## List of supported specfile fields:
 
 ### Header Tags
 
@@ -12,7 +24,6 @@ Header tags may contain the following keywords:
 * `GROUP`, `LICENSE`, `NAME`, `RELEASE`, `URL`, `VERSION`, `SUMMARY`
 * `PATCH`, `SOURCE`
 * `PRE`, `PREUN`, `POST`, `POSTUN`
-
 
 Syntax of header tags can be found here: http://wiki.rosalab.ru/en/index.php/RPM_spec_file_syntax#Spec_Header
 
@@ -40,11 +51,10 @@ Detailed syntax of section tags and sections can be found here: https://fedorapr
 
 ### Comments
 
-Comments start with '#' at the beginning of a line and end with 
-a newline. A '#' anywhere else will not be identified as a comment.
+Comments start with `#` at the beginning of a line and end with 
+a newline. A `#` anywhere else will not be identified as a comment.
 
-Comments have the same syntax as described here:
-https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch-specfile-syntax.html#id722547
+Comments have the same syntax as described here: https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch-specfile-syntax.html#id722547
 
 ### Macro Definitions
 
@@ -56,21 +66,18 @@ Macros can be defined by using one of the following keywords:
 The keyword, name and body of a macro are separated by at least one
 whitespace character.
 
-Syntax of macro definitions and some examples can be found here:        
-https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch22s02.html
+Syntax of macro definitions and some examples can be found here: https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch22s02.html
 
 ### Macro Undefinitions
 
 Macro undefinitions can be done by using the keyword `undefine`. The name
 of a macro is separated by at least one whitespace character.
 
-Syntax of a macro undefinition can be found here:
-https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch22s02.html
+Syntax of a macro undefinition can be found here: https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch22s02.html
 
 ### Conditional Macros
 
-Syntax of conditional macros can be found here:
-https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch22s02s02.html
+Syntax of conditional macros can be found here: https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch22s02s02.html
 
 The macro name and expression are separated by `:`. No whitespace 
 characters allowed between `%`, `{`, `!` and `?` characters.
@@ -94,5 +101,4 @@ whitespace character.
 
 Conditionals nested within other conditionals are supported. 
 
-Syntax of conditionals can be found here:        
-http://ftp.rpm.org/max-rpm/s1-rpm-specref-conditionals.html
+Syntax of conditionals can be found here: http://ftp.rpm.org/max-rpm/s1-rpm-specref-conditionals.html
