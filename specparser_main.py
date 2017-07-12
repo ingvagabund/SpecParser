@@ -5,7 +5,7 @@ import argparse
 # from specparser import parse_specfile
 from tests import run_tests
 from model_methods import *
-from model_2_methods import create_spec_2_model, Specfile2
+from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specfile2
 
 
 def parse_arguments():
@@ -36,6 +36,9 @@ def parse_arguments():
 
     arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1,2], default=2,
                             help="choose between specfile 1.0 and 2.0 abstract models")
+
+    arg_parser.add_argument('--debug', dest="debug", type=int, choices=[0,1], default=0,
+                            help="for testing and debugging purposes")
 
     return arg_parser.parse_args()
 
@@ -82,6 +85,11 @@ def process_args(args):
             print_json_representation(Specfile, args.reduced)
         else:
             print_json_representation(Specfile2, args.reduced)
+
+    # args.debug is set => read and process input specfile, transform into 2.0 and then back to 1.0
+    if args.debug:
+        Specfile1 = transform_spec2_to_spec1(Specfile2)
+        print(json.dumps(remove_empty_fields(Specfile1), default=lambda o: o.__dict__, sort_keys=True))
 
 
 
