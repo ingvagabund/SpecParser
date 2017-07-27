@@ -13,7 +13,7 @@ metastring_list = []
 
 
 def remove_blocktype(single_block):
-    
+
     # del single_block['block_type']
     return single_block
 
@@ -68,7 +68,7 @@ def create_metastring(single_block, block_type):
 
 
 def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
-    
+
     if json_containing_parsed_spec is None:
         return
 
@@ -77,7 +77,6 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
             single_block['AP'] = predicate_list
 
         Specfile.metastring += '#' + create_metastring(single_block, single_block['block_type'])
-        # Specfile.metastring += '#' + str(id(single_block)) + create_metastring(single_block, single_block['block_type'])
 
         # Section Tag, package section
         if single_block['block_type'] == BlockTypes.SectionTagType and 'package' in single_block['keyword']:
@@ -88,7 +87,7 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
                 Specfile.block_list = Specfile.block_list[:count]
             created_block = remove_blocktype(single_block)
             Specfile.block_list.append(created_block)
-        
+
         # Condition
         elif single_block['block_type'] == BlockTypes.ConditionType:
             Specfile.block_list.append(remove_blocktype(single_block))
@@ -120,16 +119,16 @@ def create_abstract_model(input_filepath):
 
 
 def print_indentation(indentation):
-    
+
     for i in range(indentation):
         print(' ', end='')
 
 
 
 def pretty_print_block(intern_field, block_type, indentation):
-    
+
     print_indentation(indentation)
-    
+
     if block_type == BlockTypes.HeaderTagType:
         print(intern_field['key'], end='')
         length = len(intern_field['key']) + 1
@@ -160,7 +159,7 @@ def pretty_print_block(intern_field, block_type, indentation):
         else:
             for record in intern_field['content']:
                 print('\n' + str(record) + '\n', end='')
-       
+
     elif block_type == BlockTypes.MacroDefinitionType:
         print('%' + intern_field['keyword'], end='')
         length = len(intern_field['keyword']) + 1
@@ -178,13 +177,13 @@ def pretty_print_block(intern_field, block_type, indentation):
             print(' ', end='')
 
         print(intern_field['body'] + '\n', end='')
-       
+
     elif block_type == BlockTypes.MacroConditionType:
         print('{' + intern_field['condition'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
             print(" " + intern_field['name'] + ":", end='')
         print(intern_field['content'] + '}\n', end='')
-     
+
     elif block_type == BlockTypes.MacroUndefinitionType:
         print('%' + intern_field['keyword'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
@@ -210,13 +209,13 @@ def pretty_print_block(intern_field, block_type, indentation):
 
 
 def print_pretty_field(block_list, indentation):
-    
+
     if block_list is None:
         return
 
     for block_type in [5, 2, 0, 1, 3, 4, 6]:
         printed = False
- 
+
         for intern_field in block_list:
             if intern_field != None and intern_field['block_type'] == block_type:
                 pretty_print_block(intern_field, block_type, indentation)
@@ -224,7 +223,7 @@ def print_pretty_field(block_list, indentation):
 
         if printed and block_type != 6:
             print('\n', end='')
-    
+
     return
 
 
@@ -242,14 +241,14 @@ def class_to_specfile(intern_specfile, pretty): # TODO pretty print
 
     else:
         if intern_specfile.block_list != []:
-            print_pretty_field(intern_specfile.block_list, 0)        
+            print_pretty_field(intern_specfile.block_list, 0)
 
     return
 
 
 # specfile class to specfile reconstruction - subprocedure
 def print_field(block_list):
-    
+
     global metastring_list
 
     if block_list is None:
@@ -259,7 +258,7 @@ def print_field(block_list):
         if intern_field is not None and metastring_list != []:
             metastring_block_list = metastring_list[0].split('%')
             metastring_list = metastring_list[1:]
-            print(metastring_block_list[0], end='')            
+            print(metastring_block_list[0], end='')
 
             if intern_field['block_type'] == BlockTypes.HeaderTagType:
                 for metastring in metastring_block_list[1:]:
@@ -268,7 +267,7 @@ def print_field(block_list):
 
                     print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
 
-                    if int(metastring[0]) == 0 and ('option' not in intern_field or intern_field['option'] == None):
+                    if int(metastring[0]) == 0 and ('option' not in intern_field or intern_field['option'] is None):
                         print(':', end='')
                     elif int(metastring[0]) == 1:
                         print('):', end='')
@@ -290,11 +289,11 @@ def print_field(block_list):
                     if isinstance(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], list):
                         print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]][counter], end='')
                         counter += 1
-            
+
                     else:
                         print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
                     print(metastring[1:], end='')
-        
+
             elif intern_field['block_type'] == BlockTypes.MacroDefinitionType:
                 for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 0:
@@ -338,7 +337,7 @@ def print_field(block_list):
 
                     if int(metastring[0]) == 1:
                         print_field(intern_field['content'])
-                
+
                     elif int(metastring[0]) == 3:
                         print_field(intern_field['else_body'])
 
@@ -346,50 +345,48 @@ def print_field(block_list):
 
 
 def reduce_inner_block(single_block):
-    
+
     reduced_single_block = deepcopy(single_block)
-    
+
     if isinstance(single_block, dict):
         for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
-            if value is None or value == []:
-                reduced_single_block.pop(reduced_attr, None)
+            if (value is None or not value) and value != 0:
+                reduced_single_block.pop(attr, None)
             elif (isinstance(value, dict) or isinstance(value, list)) and attr != 'AP':
-                reduce_inner_block(value)
+                for (index, single_record) in enumerate(value):
+                    reduced_value[index] = reduce_inner_block(single_record)
 
     return reduced_single_block               
 
 
 def remove_empty_fields(Specfile):
-    
-    reduced_Specfile = deepcopy(Specfile)
 
+    reduced_Specfile = deepcopy(Specfile)
     # Specfile 2.0 abstract model
     if not hasattr(Specfile, 'block_list'):
-        for (block_list, reduced_block_list) in zip(Specfile.__dict__.iteritems(), reduced_Specfile.__dict__.iteritems(),):
-            if block_list[1] == None or block_list[1] == []:
+        for block_list in Specfile.__dict__.iteritems():
+            if block_list[1] is None or block_list[1] == []:
                 delattr(reduced_Specfile, block_list[0]) 
 
-    # # Specfile 1.0 abstract model
+    # Specfile 1.0 abstract model
     else:
         for (single_block, reduced_single_block) in zip(Specfile.block_list, reduced_Specfile.block_list):
             for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
-                if value == None or value == []:
+                if value is None or value == []:
                     reduced_single_block.pop(attr, None)
-                elif isinstance(value, dict):
-                    reduced_single_block = reduce_inner_block(single_block)
                 elif isinstance(value, list):
-                    for (single_record, reduced_single_record) in zip(value, reduced_value):
-                        reduced_single_record = reduce_inner_block(single_record)
-                    
+                    for (index, single_record) in enumerate(value):
+                        reduced_value[index] = reduce_inner_block(single_record)
+
     return reduced_Specfile
 
 
-def print_json_representation(Specfile, reduced):
+def print_json_representation(Specfile_to_print, reduced):
 
     if reduced:
-        print(json.dumps(remove_empty_fields(Specfile), default=lambda o: o.__dict__, sort_keys=True))
+        print(json.dumps(remove_empty_fields(Specfile_to_print), default=lambda o: o.__dict__, sort_keys=True))
     else:
-        print(json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True))
+        print(json.dumps(Specfile_to_print, default=lambda o: o.__dict__, sort_keys=True))
 
 
 def process_config_file(Specfile, config_path):

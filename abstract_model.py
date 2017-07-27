@@ -21,12 +21,12 @@ class BlockTypes(object):
 
 
 keys_list = [
-    ['key', 'option', 'content'], 
-    ['keyword', 'name', 'parameters', 'subname', 'content'], 
-    ['keyword', 'name', 'options', 'body'], 
+    ['key', 'option', 'content'],
+    ['keyword', 'name', 'parameters', 'subname', 'content'],
+    ['keyword', 'name', 'options', 'body'],
     ['condition', 'name', 'content', 'ending'],
-    ['keyword', 'name'], 
-    ['content'], 
+    ['keyword', 'name'],
+    ['content'],
     ['keyword', 'expression', 'content', 'else_keyword', 'else_body', 'end_keyword']
 ]
 
