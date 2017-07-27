@@ -25,7 +25,7 @@ def get_whitespace(current_string, order):
 
     if current_string.isspace():
         return "%" + str(order) + current_string
-    
+
     metastring = current_string[:len(current_string) - len(current_string.lstrip())]
     metastring += "%" + str(order)
     metastring += current_string[len(current_string.rstrip()):]
@@ -114,7 +114,7 @@ def create_abstract_model(input_filepath):
         Specfile.metastring += json_containing_parsed_spec['beginning']
         Specfile.metastring + json_containing_parsed_spec['metastring']
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
-        Specfile.metastring += json_containing_parsed_spec['end']        
+        Specfile.metastring += json_containing_parsed_spec['end']
 
 
 

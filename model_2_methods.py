@@ -1,6 +1,4 @@
 from __future__ import print_function
-import json
-import sys
 import re
 
 from abstract_model import *
@@ -73,14 +71,14 @@ def transform_spec1_to_spec2(Specfile1_block_list):
             
             transform_spec1_to_spec2(block['else_body'])
             del block['else_body']
-        
+
         if 'keyword' in block and block['keyword'] == 'package':
             Specfile2.metastring += metastring1[:metastring1.find('%4')]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%4'):]
             
             transform_spec1_to_spec2(block['content'])
             del block['content']
-        
+
         # if 'end_keyword' in block and block['end_keyword'] != "":
         #     Specfile1_metastring_list = Specfile1_metastring_list[1:]
 

@@ -1,9 +1,3 @@
-from __future__ import print_function
-from pprint import pprint
-import ctypes
-
-
-
 prettyprint_headervalue_position = 16
 prettyprint_macroname_position = 20
 
@@ -33,10 +27,10 @@ keys_list = [
 
 
 class SpecfileClass(object):
-    
-    def __init__(self, type):
 
-        if type == 'Specfile 2.0':
+    def __init__(self, class_type):
+
+        if class_type == 'Specfile 2.0':
             self.HeaderTags = []
             self.SectionTags = []
             self.MacroDefinitions = []
@@ -50,7 +44,7 @@ class SpecfileClass(object):
         self.block_list = []
         self.metastring = ""
 
-        if type == 'Parser':
+        if class_type == 'Parser':
             self.beginning = ""
             self.end = ""
             

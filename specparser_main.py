@@ -1,5 +1,6 @@
 from __future__ import print_function
-import sys, json
+import sys
+import json
 import argparse
 
 # from specparser import parse_specfile
