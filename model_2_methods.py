@@ -2,6 +2,7 @@ from __future__ import print_function
 import re
 
 from abstract_model import *
+from copy import deepcopy
 
 
 Specfile2 = SpecfileClass('Specfile 2.0')
@@ -111,9 +112,8 @@ def process_blocks():
             pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
             metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
         elif int(metastring2[0]) == 1 and list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['keyword'] == 'package':
-            # pos_of_next_field = metastring2.find('#', metastring2.find('#' + metastring2[:metastring2.find('%')]) + 1)
             if int(metastring2[metastring2.find('%') + 1]) == 0:
-                metastring1 += "#" + metastring2#[:pos_of_next_field] TODO += ????
+                metastring1 += "#" + metastring2
             else:
                 pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)            
                 metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
@@ -121,9 +121,10 @@ def process_blocks():
             metastring1 += '#' + metastring2
 
         if int(metastring2[0]) == 1 and list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['keyword'] == 'package':
-            pos = get_outer_block_pos(block_list, list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
-            list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] = block_list[pos+1:]
-            block_list = block_list[:pos]
+            if int(metastring2[metastring2.find('%') + 1]) == 4:
+                pos = get_outer_block_pos(block_list, list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
+                list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] = deepcopy(block_list[pos+1:])
+                block_list = block_list[:pos]
 
         elif int(metastring2[0]) == 6:
             if int(metastring2[metastring2.find('%') + 1]) == 3 or (int(metastring2[metastring2.find('%') + 1]) == 5 and 'content' not in list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]):
