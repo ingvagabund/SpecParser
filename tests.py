@@ -1,11 +1,14 @@
 from __future__ import print_function
-import os, sys, subprocess, filecmp, shutil
+import os
+import sys
+import filecmp
+import shutil
 
 
 
 def run_tests():
-    
-    tests_descriptions = [  
+
+    tests_descriptions = [
         "TESTING TRANSFORMATION OF SPECFILE TO SPECFILE CLASS JSON REPRESENTATION",
         "TESTING TRANSFORMATION OF SPECFILE CLASS TO SPECFILE",
         "TESTING TRANSFORMATION OF JSON INPUT TO SPECFILE",
@@ -39,20 +42,20 @@ def run_tests():
         print('\n' + tests_descriptions[testing_set] + '\n')
 
         for specfile_filename in testing_specfiles:
-            
+
             if testing_set == 2:
                 source_file_path = ' -i ./Tests/RefOutputs/0/'
             else:
                 source_file_path = ' -i ./Tests/Inputs/'
 
             os.system('python specparser_main.py ' + arguments[testing_set] + source_file_path + specfile_filename + ' > ./Tests/Outputs/' + str(testing_set) + '/' + specfile_filename)
-            
+
             intro = 'TEST ' + str(test_number) + ': '
 
             if testing_set in [0, 3, 4]:
                 reference_output_path = './Tests/RefOutputs/' + str(testing_set) + '/' + specfile_filename
             elif testing_set == 5:
-                reference_output_path = './Tests/RefOutputs/0/' + specfile_filename                
+                reference_output_path = './Tests/RefOutputs/0/' + specfile_filename
             else:
                 reference_output_path = './Tests/Inputs/' + specfile_filename
 

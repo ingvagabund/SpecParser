@@ -7,6 +7,10 @@ import argparse
 from tests import run_tests
 from model_methods import *
 from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specfile2
+from go_spec import create_go_spec_model
+
+
+go_spec = False
 
 
 def parse_arguments():
@@ -92,6 +96,8 @@ def process_args(args):
         Specfile1 = transform_spec2_to_spec1(Specfile2)
         print(json.dumps(remove_empty_fields(Specfile1), default=lambda o: o.__dict__, sort_keys=True))
 
+    if go_spec:     # TODO how to determine?
+        create_go_spec_model(Specfile2)
 
 
 def main():
