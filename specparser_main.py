@@ -10,8 +10,6 @@ from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specf
 from go_spec import create_go_spec_model
 
 
-go_spec = False
-
 
 def parse_arguments():
     """processes given arguments and stores requested options"""
@@ -44,6 +42,9 @@ def parse_arguments():
 
     arg_parser.add_argument('--debug', dest="debug", type=int, choices=[0,1], default=0,
                             help="for testing and debugging purposes")
+
+    arg_parser.add_argument('-g', '--go_spec', dest="go_spec", type=int, choices=[0,1], default=0,
+                            help="for testing and debugging purposes only, transforms specfile into go specfile")
 
     return arg_parser.parse_args()
 
@@ -96,7 +97,7 @@ def process_args(args):
         Specfile1 = transform_spec2_to_spec1(Specfile2)
         print(json.dumps(remove_empty_fields(Specfile1), default=lambda o: o.__dict__, sort_keys=True))
 
-    if go_spec:     # TODO how to determine?
+    if args.go_spec:     # TODO how to determine?
         create_go_spec_model(Specfile2)
 
 

@@ -43,7 +43,9 @@ class SpecfileClass(object):
 
         elif class_type == 'GO spec':
             self.metadata = []
+            self.main_unit = []
             self.unit_list = []
+            self.history = []
             self.metastring = ""
             return
 

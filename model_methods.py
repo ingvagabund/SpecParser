@@ -85,8 +85,7 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
                 count = len(Specfile.block_list)
                 json_to_specfile_class(single_block['content'], predicate_list)
                 Specfile.block_list = Specfile.block_list[:count]
-            created_block = remove_blocktype(single_block)
-            Specfile.block_list.append(created_block)
+            Specfile.block_list.append(remove_blocktype(single_block))
 
         # Condition
         elif single_block['block_type'] == BlockTypes.ConditionType:
@@ -112,7 +111,7 @@ def create_abstract_model(input_filepath):
         Specfile.metastring = json_containing_parsed_spec['metastring']
     else:
         Specfile.metastring += json_containing_parsed_spec['beginning']
-        Specfile.metastring + json_containing_parsed_spec['metastring']
+        Specfile.metastring += json_containing_parsed_spec['metastring']
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
         Specfile.metastring += json_containing_parsed_spec['end']
 
@@ -277,7 +276,7 @@ def print_field(block_list):
             elif intern_field['block_type'] == BlockTypes.SectionTagType:
                 counter = 0
 
-                for metastring in metastring_block_list[1:]:
+                for metastring in metastring_block_list[1:]:                    
                     if int(metastring[0]) == 0:
                         print('%', end='')
                     elif int(metastring[0]) == 2:
@@ -362,14 +361,9 @@ def reduce_inner_block(single_block):
 def remove_empty_fields(Specfile):
 
     reduced_Specfile = deepcopy(Specfile)
-    # Specfile 2.0 abstract model
-    if not hasattr(Specfile, 'block_list'):
-        for block_list in Specfile.__dict__.iteritems():
-            if block_list[1] is None or block_list[1] == []:
-                delattr(reduced_Specfile, block_list[0]) 
 
     # Specfile 1.0 abstract model
-    else:
+    if hasattr(Specfile, 'block_list'):
         for (single_block, reduced_single_block) in zip(Specfile.block_list, reduced_Specfile.block_list):
             for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
                 if value is None or value == []:
@@ -377,6 +371,12 @@ def remove_empty_fields(Specfile):
                 elif isinstance(value, list):
                     for (index, single_record) in enumerate(value):
                         reduced_value[index] = reduce_inner_block(single_record)
+
+    # Specfile 2.0 abstract model
+    else:
+        for block_list in Specfile.__dict__.iteritems():
+            if block_list[1] is None or block_list[1] == []:
+                delattr(reduced_Specfile, block_list[0])
 
     return reduced_Specfile
 
