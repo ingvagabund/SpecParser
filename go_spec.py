@@ -1,11 +1,11 @@
 from __future__ import print_function
 import json
 import re
-import ruamel.yaml
 from copy import deepcopy
 
-from abstract_model import SpecfileClass, BlockTypes
-from model_methods import reduce_inner_block
+
+from abstract_model import SpecfileClass, BlockTypes, keys_list
+from model_methods import create_metastring
 
 
 GoSpecfile = SpecfileClass('GO spec')
@@ -17,8 +17,8 @@ def reduce_gospecfile():
 
     reduced_GoSpecfile = deepcopy(GoSpecfile)
 
-    for (block_list, reduced_block_list) in zip(GoSpecfile.__dict__.iteritems(), reduced_GoSpecfile.__dict__.iteritems()):
-        if block_list[1] is None or block_list[1] == [[]] or block_list[1] == [] or block_list[1] == "" or block_list[0] == 'metastring':
+    for (block_list, reduced_block_list) in zip(sorted(GoSpecfile.__dict__.iteritems()), sorted(reduced_GoSpecfile.__dict__.iteritems())):
+        if block_list[1] is None or block_list[1] == [[]] or block_list[1] == [] or block_list[1] == {} or block_list[1] == '' or block_list[0] in ['metastring', 'comments']:
             delattr(reduced_GoSpecfile, block_list[0])
         elif isinstance(block_list[1], list):
             for (index, single_record) in enumerate(block_list[1]):
@@ -30,20 +30,24 @@ def reduce_gospecfile():
                         for keyword in single_record:
                             if 'block_type' not in single_record[keyword]:
                                 for inner_keyword in single_record[keyword]:
-                                    if 'block_type' not in single_record[keyword][inner_keyword]:
-                                        print("DICT: " + str(inner_keyword) + " : "  + str(single_record[keyword][inner_keyword]))
-                                    else:
-                                        reduced_block_list[1][index][keyword][inner_keyword] = gospecfile_to_print(reduced_block_list[1][index][keyword][inner_keyword]) 
+                                    if 'block_type' in single_record[keyword][inner_keyword]:
+                                        reduced_block_list[1][index][keyword][inner_keyword] = gospecfile_to_print(block_list[1][index][keyword][inner_keyword]) 
                             else:
                                 print("NOT DICT: " + str(keyword) + " : "  + str(single_record[keyword]))
-                    
+
                     else:
-                        reduced_block_list[1][index] = gospecfile_to_print(reduced_block_list[1][index])
+                        reduced_block_list[1][index] = gospecfile_to_print(block_list[1][index])
+
+        elif isinstance(block_list[1], dict):
+            if block_list[1] != {}:
+                reduced_GoSpecfile.history = gospecfile_to_print(block_list[1])
 
     return reduced_GoSpecfile
 
 
 def gospecfile_to_print(single_record):
+
+    global GoSpecfile
 
     if single_record['block_type'] == BlockTypes.HeaderTagType:
         single_record = {single_record['key']:single_record['content']}
@@ -56,17 +60,30 @@ def gospecfile_to_print(single_record):
     elif single_record['block_type'] == BlockTypes.SectionTagType:
         if 'keyword' in single_record and 'content' in single_record:
             if single_record['keyword'] == 'changelog':
+                length = len(single_record['content']) - 1
                 for idx, single_log in enumerate(single_record['content']):
-                    single_record[idx] = parse_changelog(single_log)
+                    single_record[length - idx] = parse_changelog(single_log)
+                    create_metastring(single_record[length - idx], BlockTypes.ChangelogTagType)
                     if 'keyword' in single_record:
                         del single_record['keyword']
-                    if 'block_type' in single_record:
-                        del single_record['block_type']
                     if 'content' in single_record:
                         del single_record['content']
+                single_record['block_type'] = BlockTypes.ChangelogTagType
+                single_record = gospecfile_to_print(single_record)
 
             else:
+                if single_record['content'] == '':
+                    single_record['content'] = None
                 single_record = {single_record['keyword']:single_record['content']}
+
+    elif single_record['block_type'] == BlockTypes.ChangelogTagType:
+        del single_record['block_type']
+        for record_index in single_record:
+            for field in keys_list[BlockTypes.ChangelogTagType]:
+                if field in single_record[record_index] and single_record[record_index][field] == '':
+                    single_record[record_index][field] = None
+                # else:
+                #     single_record[record_index][field] = single_record[record_index][field]
 
     return single_record
 
@@ -75,9 +92,9 @@ def replace_field_number(prev_section_count, replacing):
 
     global GoSpecfile
 
-    to_be_replaced_list = re.findall(r'#' + str(replacing[0]) + '\d+', GoSpecfile.metastring)
+    to_be_replaced_list = re.findall(r'#' + str(replacing[0]) + r'\d*', GoSpecfile.metastring)
     for replace_record in to_be_replaced_list:
-        GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#' + str(replacing[1]) + str(int(replace_record[2:]) + prev_section_count))
+        GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str(replacing[1]) + str(prev_section_count))
 
 
 def parse_changelog(changelog):
@@ -93,63 +110,87 @@ def parse_changelog(changelog):
     return parsed_changelog
 
 
+def append_dependency(keyword, header_tag):
+
+    if GoSpecfile.main_unit == []:
+        GoSpecfile.main_unit.append({keyword:{'dependencies':[{'name':header_tag['content']}]}})
+    else:
+        found = False
+        for single_record in GoSpecfile.main_unit:
+            if keyword in single_record:
+                found = True
+                if 'dependencies' in single_record[keyword]:
+                    single_record[keyword]['dependencies'].append({'name':header_tag['content']})
+                else:
+                    single_record[keyword]['dependencies'] = [{'name':header_tag['content']}]
+
+        if found is False:
+            GoSpecfile.main_unit.append({keyword:{'dependencies':[{'name':header_tag['content']}]}})
+    return
+
+
+def process_unit_list():
+
+    used_unit_names = []
+    for single_unit in GoSpecfile.unit_list:
+        if single_unit['subname'] not in used_unit_names:
+            used_unit_names.append(single_unit['subname'])
+        # else:
+        #     pos = find_appropriate_unit()
+        #     append_to_appropriate_unit
+        #     remove_original_record()
+
+    return
+
+
 def create_go_spec_model(Specfile2):
 
     global GoSpecfile
     GoSpecfile.metastring = Specfile2.metastring
 
+    prev_section_count = 0
+
     if Specfile2.HeaderTags:
-        for header_tag in Specfile2.HeaderTags:
+        for index, header_tag in enumerate(Specfile2.HeaderTags):
             if re.match(r'(?i)requires', header_tag['key']) is not None:
-                if 'runtime' in GoSpecfile.main_unit:
-                    if 'dependencies' in GoSpecfile.main_unit['runtime']:
-                        GoSpecfile.main_unit['runtime']['dependencies'].append(header_tag)                    
-                    else:
-                        GoSpecfile.main_unit['runtime']['dependencies'] = header_tag
-                else:
-                    GoSpecfile.main_unit.append({'runtime':{'dependencies':header_tag}})
+                append_dependency('runtime', header_tag)
+                replace_field_number(prev_section_count, ["0" + str(index), 1])
+                prev_section_count += 1
 
             elif re.match(r'(?i)buildrequires', header_tag['key']) is not None:
-                if 'buildtime' in GoSpecfile.main_unit:
-                    if 'dependencies' in GoSpecfile.main_unit['buildtime']:
-                        GoSpecfile.main_unit['buildtime']['dependencies'].append(header_tag)                    
-                    else:
-                        GoSpecfile.main_unit['buildtime']['dependencies'] = header_tag
-                else:            
-                    GoSpecfile.main_unit.append({'buildtime':{'dependencies':header_tag}})
+                append_dependency('buildtime', header_tag)
+                replace_field_number(prev_section_count, ["0" + str(index), 1])
+                prev_section_count += 1
 
             elif 'AP' not in header_tag or header_tag['AP'] == '':
                 GoSpecfile.metadata.append(header_tag)
 
     if Specfile2.MacroDefinitions:
+        for index in range(len(Specfile2.MacroDefinitions)):
+            replace_field_number(len(GoSpecfile.metadata) + index, ["2" + str(index), 0])
         GoSpecfile.metadata += Specfile2.MacroDefinitions
-        replace_field_number(len(Specfile2.HeaderTags), [2,0])
-
-    prev_section_count = 0
-    # unit_list = []  # TODO make a dict instead?
 
     if Specfile2.SectionTags:
-        
-        for single_section in Specfile2.SectionTags:
+        for index, single_section in enumerate(Specfile2.SectionTags):
             if single_section['keyword'] == 'changelog':
-                GoSpecfile.history.append(single_section)
-                replace_field_number(prev_section_count, [1,1])
+                GoSpecfile.history = single_section
+                replace_field_number(0, ["1" + str(index),3])
                 prev_section_count += 1
+
+            elif('subname' in single_section and single_section['subname'] is not None):
+                # TODO find appropriate unit if it exists
+                GoSpecfile.unit_list.append(single_section)
 
             elif ('AP' not in single_section or single_section['AP'] == ''):
                 GoSpecfile.main_unit.append(single_section)
-                replace_field_number(prev_section_count, [1,1])
+                replace_field_number(prev_section_count, ["1" + str(index),1])
                 prev_section_count += 1
 
-    # if Specfile2.Comments:
-    #     GoSpecfile.main_unit += Specfile2.Comments
-    #     GoSpecfile.metastring = replace_field_number(GoSpecfile.metastring, prev_section_count, [5,1])
-    #     prev_section_count += len(Specfile2.Comments)
+    if Specfile2.Comments:
+        for index in range(len(Specfile2.Comments)):
+            replace_field_number(index, [5, 4])
+        prev_section_count += len(Specfile2.Comments)
+        GoSpecfile.comments = Specfile2.Comments
 
-    # GoSpecfile.unit_list.append(unit_list)
-    
-    # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(GoSpecfile), default=lambda o: o.__dict__, sort_keys=True))))
-    print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
-        json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True)),
-                                      default_flow_style=False, indent=4, block_seq_indent=2, width=80))
-    # print("\n\n"+str(GoSpecfile.metastring))
+    process_unit_list()
+    GoSpecfile.metastring = GoSpecfile.metastring.replace('#!', '#')

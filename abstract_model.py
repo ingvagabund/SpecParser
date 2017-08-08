@@ -11,6 +11,7 @@ class BlockTypes(object):
     MacroUndefinitionType = 4
     CommentType = 5
     ConditionType = 6
+    ChangelogTagType = 7
 
 
 
@@ -21,7 +22,8 @@ keys_list = [
     ['condition', 'name', 'content', 'ending'],
     ['keyword', 'name'],
     ['content'],
-    ['keyword', 'expression', 'content', 'else_keyword', 'else_body', 'end_keyword']
+    ['keyword', 'expression', 'content', 'else_keyword', 'else_body', 'end_keyword'],
+    ['author', 'date', 'mark', 'comment']
 ]
 
 
@@ -45,7 +47,8 @@ class SpecfileClass(object):
             self.metadata = []
             self.main_unit = []
             self.unit_list = []
-            self.history = []
+            self.history = {}
+            self.comments = []
             self.metastring = ""
             return
 

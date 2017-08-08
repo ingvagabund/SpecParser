@@ -2,12 +2,13 @@ from __future__ import print_function
 import sys
 import json
 import argparse
+import ruamel.yaml
 
 # from specparser import parse_specfile
 from tests import run_tests
 from model_methods import *
 from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specfile2
-from go_spec import create_go_spec_model
+from go_spec import create_go_spec_model, GoSpecfile, reduce_gospecfile
 
 
 
@@ -99,6 +100,20 @@ def process_args(args):
 
     if args.go_spec:     # TODO how to determine?
         create_go_spec_model(Specfile2)
+
+        if args.reduced:
+            pretty_gospec = reduce_gospecfile()
+            # print(json.dumps(pretty_gospec, default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
+            # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(GoSpecfile), default=lambda o: o.__dict__, sort_keys=True))))
+            print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
+                json.dumps(pretty_gospec, default=lambda o: o.__dict__, sort_keys=True)),
+                                              default_flow_style=False, indent=4,
+                                              block_seq_indent=2, width=80))
+        else:
+            print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
+                json.dumps(GoSpecfile, default=lambda o: o.__dict__, sort_keys=True)),
+                                              default_flow_style=False, indent=4,
+                                              block_seq_indent=2, width=80))
 
 
 def main():
