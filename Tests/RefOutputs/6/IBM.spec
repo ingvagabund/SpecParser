@@ -4,8 +4,12 @@ main_unit:
   - prep: '%setup -q'
   - build: "./configure\nmake"
   - install: make install prefix=$RPM_BUILD_ROOT/usr
-  - files: "%defattr(-,root,root)\n/usr/local/bin/wget\n \n%doc %attr(0444,root,root)\
-        \ /usr/local/share/man/man1/wget.1"
+  - files:
+        list:
+          - '%defattr(-,root,root)'
+          - /usr/local/bin/wget
+          - ' '
+          - '%doc %attr(0444,root,root) /usr/local/share/man/man1/wget.1'
 metadata:
   - BuildRoot: '%{buildroot}'
   - Summary: GNU wget

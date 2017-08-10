@@ -45,6 +45,11 @@ def reduce_gospecfile():
     return reduced_GoSpecfile
 
 
+def parse_files_section(files_content):
+
+    return filter(None, files_content.split('\n'))
+
+
 def gospecfile_to_print(single_record):
 
     global GoSpecfile
@@ -70,6 +75,17 @@ def gospecfile_to_print(single_record):
                         del single_record['content']
                 single_record['block_type'] = BlockTypes.ChangelogTagType
                 single_record = gospecfile_to_print(single_record)
+
+            elif single_record['keyword'] == 'files':
+                parsed_record = {}
+                if 'name' in single_record and single_record['name'] is not None:
+                    print("TODO find appropriate unit")
+                    print(str(single_record))
+                    # parsed_record = {'name':single_record['name']}
+                if 'subname' in single_record and single_record['subname'] is not None:
+                    parsed_record.update({'meta':{'file':single_record['subname']}})
+                parsed_record.update({'list':parse_files_section(single_record['content'])})
+                single_record = {'files':parsed_record}
 
             else:
                 if single_record['content'] == '':
@@ -177,7 +193,7 @@ def create_go_spec_model(Specfile2):
                 replace_field_number(0, ["1" + str(index),3])
                 prev_section_count += 1
 
-            elif('subname' in single_section and single_section['subname'] is not None):
+            elif('name' in single_section and single_section['name'] is not None):
                 # TODO find appropriate unit if it exists
                 GoSpecfile.unit_list.append(single_section)
 

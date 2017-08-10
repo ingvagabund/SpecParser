@@ -9,7 +9,7 @@ main_unit:
           - name: requires description
   - runtime:
         dependencies:
-            name: reqs
+          - name: reqs
   - content: ''
     block_type: 1
     name:

@@ -12,8 +12,15 @@ main_unit:
   - build: "%configure\n%make_build"
   - install: "%make_install\n\ninstall -m 755 -d %{buildroot}/%{_sbindir}\nln -s ../bin/eject\
         \ %{buildroot}/%{_sbindir}\n\n%find_lang %{name}"
-  - files: "%license COPYING\n%doc README TODO ChangeLog\n%{_bindir}/*\n%{_sbindir}/*\n\
-        %{_mandir}/man1/*"
+  - files:
+        meta:
+            file: '%{name}.lang'
+        list:
+          - '%license COPYING'
+          - '%doc README TODO ChangeLog'
+          - '%{_bindir}/*'
+          - '%{_sbindir}/*'
+          - '%{_mandir}/man1/*'
 metadata:
   - Summary: A program that ejects removable media using software control
   - Name: eject

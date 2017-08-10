@@ -10,7 +10,10 @@ main_unit:
   - build: "%configure\n%make_build"
   - check: make check
   - install: "rm -rf $RPM_BUILD_ROOT\n%make_install"
-  - files: "%license add-license-file-here\n\n%doc README TODO"
+  - files:
+        list:
+          - '%license add-license-file-here'
+          - '%doc README TODO'
 metadata:
   - Name: eject
   - Version: 1.2.5
