@@ -6,7 +6,8 @@ import ruamel.yaml
 
 # from specparser import parse_specfile
 from tests import run_tests
-from model_methods import *
+from model_methods import create_abstract_model, Specfile, class_to_specfile
+from model_methods import process_config_file, print_json_representation, remove_empty_fields
 from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specfile2
 from go_spec import create_go_spec_model, GoSpecfile, reduce_gospecfile
 
