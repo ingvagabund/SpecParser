@@ -1,8 +1,4 @@
 main_unit:
-  - buildtime:
-        dependencies:
-          - name: gettext
-          - name: libtool
   - description: "The eject program allows the user to eject removable media (typically\n\
         CD-ROMs, floppy disks or Iomega Jaz or Zip disks) using software\ncontrol.\
         \ Eject can also control some multi-disk CD changers and even\nsome devices'\
@@ -21,6 +17,10 @@ main_unit:
           - '%{_bindir}/*'
           - '%{_sbindir}/*'
           - '%{_mandir}/man1/*'
+  - buildtime:
+        dependencies:
+          - name: libtool
+          - name: gettext
 metadata:
   - Summary: A program that ejects removable media using software control
   - Name: eject

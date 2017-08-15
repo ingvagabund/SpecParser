@@ -6,10 +6,14 @@ metastring: "#00%0            %2\n#01%0               %2\n#02%0            %2\n#
     \    %2\n#10%0      %2\n#11%0      %2\n\n#12%0\n%4\n\n#13%0\n%4\n\n#14%0\n%4\n\
     \n#15%0\n%4\n\n#16%0 %2 %3\n%4\n\n#30%0\n%4\n\n%4\n"
 main_unit:
-  - buildtime:
-        dependencies:
-          - name: gettext
-          - name: libtool
+  - content: gettext
+    block_type: 0
+    option:
+    key: BuildRequires
+  - content: libtool
+    block_type: 0
+    option:
+    key: BuildRequires
   - content: "The eject program allows the user to eject removable media (typically\n\
         CD-ROMs, floppy disks or Iomega Jaz or Zip disks) using software\ncontrol.\
         \ Eject can also control some multi-disk CD changers and even\nsome devices'\

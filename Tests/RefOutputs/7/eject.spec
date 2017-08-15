@@ -4,12 +4,14 @@ metastring: "#00%0           %2\n#01%0        %2\n#02%0        %2\n#03%0        
     %4\n\n\n#14%0\n%4\n\n#10%0  %2\n#11%0       %2 \n\n\n#15%0\n%4\n\n\n#16%0\n%4\n\
     \n\n#17%0\n%4\n\n\n\n#30%0\n%4 \n"
 main_unit:
-  - buildtime:
-        dependencies:
-          - name: requires description
-  - runtime:
-        dependencies:
-          - name: reqs
+  - content: requires description
+    block_type: 0
+    option:
+    key: BuildRequires
+  - content: reqs
+    block_type: 0
+    option:
+    key: Requires
   - content: ''
     block_type: 1
     name:

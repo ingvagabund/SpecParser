@@ -42,11 +42,13 @@ def create_blocks_from_specfile():
     list_of_blocks.append(Specfile2.Conditions)
 
 
-def transform_spec1_to_spec2(Specfile1_block_list):
+def transform_spec1_to_spec2(Specfile1_block_list, package_name):
 
     global Specfile1_metastring_list
 
     for block in Specfile1_block_list:
+        if package_name is not None:
+            block['package'] = package_name
         metastring1 = Specfile1_metastring_list[0]
         Specfile1_metastring_list = Specfile1_metastring_list[1:]
         block_metastring_list = metastring1.split('%')
@@ -63,21 +65,21 @@ def transform_spec1_to_spec2(Specfile1_block_list):
             Specfile2.metastring += metastring1[:metastring1.find('%' + str(number_of_next_item))]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%' + str(number_of_next_item)):]                
 
-            transform_spec1_to_spec2(block['content'])
+            transform_spec1_to_spec2(block['content'], None)
             del block['content']
 
         if 'else_body' in block and block['else_body'] != []:
             Specfile2.metastring += metastring1[:metastring1.find('%5')]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%5'):]
             
-            transform_spec1_to_spec2(block['else_body'])
+            transform_spec1_to_spec2(block['else_body'], None)
             del block['else_body']
 
         if 'keyword' in block and block['keyword'] == 'package':
             Specfile2.metastring += metastring1[:metastring1.find('%4')]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%4'):]
             
-            transform_spec1_to_spec2(block['content'])
+            transform_spec1_to_spec2(block['content'], block['subname'])
             del block['content']
 
         # if 'end_keyword' in block and block['end_keyword'] != "":
@@ -119,6 +121,9 @@ def process_blocks():
                 metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
         else:
             metastring1 += '#' + metastring2
+
+        if 'package' in list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]:
+            del list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['package']
 
         if int(metastring2[0]) == 1 and list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['keyword'] == 'package':
             if int(metastring2[metastring2.find('%') + 1]) == 4:
@@ -173,4 +178,4 @@ def create_spec_2_model(Specfile1):
     metastring_list = Specfile1.metastring.split('#')
     Specfile2.metastring += metastring_list[0]
     Specfile1_metastring_list = metastring_list[1:]
-    transform_spec1_to_spec2(Specfile1.block_list)
+    transform_spec1_to_spec2(Specfile1.block_list, None)

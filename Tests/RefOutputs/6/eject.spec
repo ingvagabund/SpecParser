@@ -1,10 +1,4 @@
 main_unit:
-  - buildtime:
-        dependencies:
-          - name: requires description
-  - runtime:
-        dependencies:
-          - name: reqs
   - description:
   - prep: '%autosetup'
   - build: "%configure\n%make_build"
@@ -14,6 +8,12 @@ main_unit:
         list:
           - '%license add-license-file-here'
           - '%doc README TODO'
+  - runtime:
+        dependencies:
+          - name: reqs
+  - buildtime:
+        dependencies:
+          - name: requires description
 metadata:
   - Name: eject
   - Version: 1.2.5
