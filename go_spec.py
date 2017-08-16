@@ -1,5 +1,4 @@
 from __future__ import print_function
-import json
 import re
 from copy import deepcopy
 
@@ -19,7 +18,7 @@ def reduce_gospecfile():
     reduced_GoSpecfile = deepcopy(GoSpecfile)
 
     for (block_list, reduced_block_list) in zip(sorted(GoSpecfile.__dict__.iteritems()), sorted(reduced_GoSpecfile.__dict__.iteritems())):
-        if block_list[1] is None or block_list[1] == [[]] or block_list[1] == [] or block_list[1] == {} or block_list[1] == '' or block_list[0] in ['metastring', 'comments']:
+        if block_list[1] is None or block_list[1] == [[]] or block_list[1] == [] or block_list[1] == {} or block_list[1] == '':
             delattr(reduced_GoSpecfile, block_list[0])
         elif isinstance(block_list[1], list):
             for (index, single_record) in reversed(list(enumerate(block_list[1]))):
@@ -38,7 +37,7 @@ def reduce_gospecfile():
                             else:          
                                 reduced_block_list[1][index][neco] = gospecfile_to_print(neco2)
                         for record in reversed(sorted(to_be_removed)):
-                                del reduced_block_list[1][record[0]][record[1]]
+                            del reduced_block_list[1][record[0]][record[1]]
                 else:
                     if 'block_type' not in single_record:
                         for keyword in single_record:
@@ -46,7 +45,7 @@ def reduce_gospecfile():
                                 for inner_keyword in single_record[keyword]:
                                     if single_record[keyword][inner_keyword] is not None:
                                         if 'block_type' in single_record[keyword][inner_keyword]:
-                                            reduced_block_list[1][index][keyword][inner_keyword] = gospecfile_to_print(block_list[1][index][keyword][inner_keyword]) 
+                                            reduced_block_list[1][index][keyword][inner_keyword] = gospecfile_to_print(block_list[1][index][keyword][inner_keyword])
                             else:
                                 print("NOT DICT: " + str(keyword) + " : "  + str(single_record[keyword]))
 
@@ -96,6 +95,15 @@ def append_dependency(current_unit, keyword, header_tag):
 
 def gospecfile_to_print(single_record):
 
+    predicate_list = []
+
+    if 'AP' in single_record and single_record['AP'] != '':
+        for single_predicate in single_record['AP']:
+            if single_predicate[1] == 1:
+                predicate_list.append(single_predicate[0])
+            else:
+                predicate_list.append('NOT ' + single_predicate[0])
+
     if single_record['block_type'] == BlockTypes.HeaderTagType:
         if re.match(r'(?i)requires', single_record['key']) is not None:
             GoSpecfile.main_unit = append_dependency(GoSpecfile.main_unit, 'runtime', single_record)
@@ -138,6 +146,9 @@ def gospecfile_to_print(single_record):
                     single_record['content'] = None
                 single_record = {single_record['keyword']:single_record['content']}
 
+    elif single_record['block_type'] == BlockTypes.CommentType:
+        single_record = single_record['content']
+
     elif single_record['block_type'] == BlockTypes.ChangelogTagType:
         del single_record['block_type']
         for record_index in single_record:
@@ -146,6 +157,12 @@ def gospecfile_to_print(single_record):
                     single_record[record_index][field] = None
                 # else:
                 #     single_record[record_index][field] = single_record[record_index][field]
+
+    if predicate_list != []:
+        if isinstance(single_record, dict):
+            single_record.update({'condition':predicate_list})
+        elif isinstance(single_record, unicode):
+            single_record = (single_record, {'condition':predicate_list})
 
     return single_record
 
@@ -166,7 +183,16 @@ def parse_changelog(changelog):
 
     parsed_changelog['comment'] = changelog[changelog.find('\n')+1:]
     parsed_changelog['date'] = first_line[first_line.find('*')+1:first_line.find('20')+4]
-    parsed_changelog['mark'] = re.findall(r'[\d\s\.-]*', first_line)[-2]
+    parsed_changelog['mark'] = re.findall(r'\s+\-\s[\s\S]*', first_line)
+    if parsed_changelog['mark'] == []:
+        parsed_changelog['mark'] = re.findall(r'[\d\.\s-]*', first_line)
+        if parsed_changelog['mark'] == []:
+            parsed_changelog['mark'] = ''
+        else:
+            parsed_changelog['mark'] = parsed_changelog['mark'][-2]
+    else:
+        parsed_changelog['mark'] = parsed_changelog['mark'][0]
+
     parsed_changelog['author'] = first_line[first_line.find(parsed_changelog['date'])+(len(parsed_changelog['date'])):first_line.rfind(parsed_changelog['mark'])]
 
     return parsed_changelog
@@ -187,7 +213,7 @@ def process_unit_list():
         return
 
     processed_unit_list = []
-    for count_of_units in range(len(used_unit_names) + 1):
+    for _ in range(len(used_unit_names) + 1):
         processed_unit_list.append([])
 
     for single_record in GoSpecfile.unit_list:
@@ -222,7 +248,12 @@ def create_go_spec_model(Specfile2):
                 elif re.match(r'(?i)buildrequires', header_tag['key']) is not None:
                     replace_field_number(prev_section_count, ["0" + str(index), 1])
                     prev_section_count += 1
-                    GoSpecfile.main_unit.append(header_tag)                    
+                    GoSpecfile.main_unit.append(header_tag)
+
+                # elif re.match(r'(?i)excludearch', header_tag['key']) is not None:     # TODO
+                #     replace_field_number(prev_section_count, ["0" + str(index), 1])
+                #     prev_section_count += 1
+                #     GoSpecfile.main_unit.append(header_tag)
 
                 elif 'AP' not in header_tag or header_tag['AP'] == '':
                     GoSpecfile.metadata.append(header_tag)
@@ -230,9 +261,13 @@ def create_go_spec_model(Specfile2):
                 GoSpecfile.unit_list.append(header_tag)
 
     if Specfile2.MacroDefinitions:
-        for index in range(len(Specfile2.MacroDefinitions)):
-            replace_field_number(len(GoSpecfile.metadata) + index, ["2" + str(index), 0])
-        GoSpecfile.metadata += Specfile2.MacroDefinitions
+        for index, macro_definition in enumerate(list_of_blocks[2]):
+            # if 'AP' not in macro_definition or macro_definition['AP'] == '':
+            GoSpecfile.metadata.append(macro_definition)
+            replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])
+            # else:           # TODO
+            #     GoSpecfile.metadata.append(macro_definition)
+            #     replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])            
 
     if Specfile2.SectionTags:
         # to_be_removed = []
@@ -263,8 +298,9 @@ def create_go_spec_model(Specfile2):
                 #                     GoSpecfile.unit_list.append(list_of_blocks[int(single_inner_section[0])][int(single_inner_section[1:single_inner_section.find('%')])])
                 #             to_be_removed.append([int(single_inner_section[0]), int(single_inner_section[1:single_inner_section.find('%')])])                            
 
-            elif ('name' in single_section and single_section['name'] is not None):
-           # or ('subname' in single_section and single_section['subname'] is not None): # TODO subname?
+            elif ('name' in single_section and single_section['name'] is not None) \
+            or ('subname' in single_section and single_section['subname'] is not None \
+            and 'parameters' in single_section and 'n' in single_section['parameters']): # TODO subname?
                 GoSpecfile.unit_list.append(single_section)
 
             elif 'AP' not in single_section or single_section['AP'] == '':
@@ -285,6 +321,9 @@ def create_go_spec_model(Specfile2):
             replace_field_number(index, [5, 4])
         prev_section_count += len(Specfile2.Comments)
         GoSpecfile.comments = Specfile2.Comments
+
+    if Specfile2.MacroConditions:   # TODO + parse content
+        print(str(Specfile2.MacroConditions))
 
     process_unit_list()
     GoSpecfile.metastring = GoSpecfile.metastring.replace('#!', '#')
