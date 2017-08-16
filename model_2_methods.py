@@ -12,7 +12,7 @@ Specfile1_metastring_list = []
 
 
 number_of_blocktypes = len([a for a in dir(BlockTypes) if not a.startswith('__')])
-for i in range(number_of_blocktypes):
+for _ in range(number_of_blocktypes):
     list_of_blocks.append([])
 
 

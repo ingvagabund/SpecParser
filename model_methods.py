@@ -119,7 +119,7 @@ def create_abstract_model(input_filepath):
 
 def print_indentation(indentation):
 
-    for i in range(indentation):
+    for _ in range(indentation):
         print(' ', end='')
 
 
@@ -140,7 +140,7 @@ def pretty_print_block(intern_field, block_type, indentation):
 
         if length >= prettyprint_headervalue_position:
             length = prettyprint_headervalue_position - 2
-        for i in range(prettyprint_headervalue_position - length):
+        for _ in range(prettyprint_headervalue_position - length):
             print(' ', end='')
 
         print(intern_field['content'] + '\n', end='')
@@ -172,7 +172,7 @@ def pretty_print_block(intern_field, block_type, indentation):
 
         if length >= prettyprint_macroname_position:
             length = prettyprint_macroname_position - 1
-        for i in range(prettyprint_macroname_position - length):
+        for _ in range(prettyprint_macroname_position - length):
             print(' ', end='')
 
         print(intern_field['body'] + '\n', end='')
@@ -348,7 +348,7 @@ def reduce_inner_block(single_block):
     reduced_single_block = deepcopy(single_block)
 
     if isinstance(single_block, dict):
-        for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
+        for (attr, value), (_, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
             if (value is None or not value) and value != 0:
                 reduced_single_block.pop(attr, None)
             elif (isinstance(value, dict) or isinstance(value, list)) and attr != 'AP':
@@ -365,7 +365,7 @@ def remove_empty_fields(Specfile):
     # Specfile 1.0 abstract model
     if hasattr(Specfile, 'block_list'):
         for (single_block, reduced_single_block) in zip(Specfile.block_list, reduced_Specfile.block_list):
-            for (attr, value), (reduced_attr, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
+            for (attr, value), (_, reduced_value) in zip(single_block.iteritems(), reduced_single_block.iteritems()):
                 if value is None or value == []:
                     reduced_single_block.pop(attr, None)
                 elif isinstance(value, list):
