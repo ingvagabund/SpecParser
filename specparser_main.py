@@ -21,31 +21,31 @@ def parse_arguments():
     arg_parser.add_argument('-i', '--input', dest="input", type=str,
                             help="path to input specfile")
 
-    arg_parser.add_argument('-t', '--test', dest="test", type=int, choices=[0,1], default=0,
+    arg_parser.add_argument('-t', '--test', dest="test", type=int, choices=[0, 1], default=0,
                             help="turns on/off (1/0) tests run")
 
-    arg_parser.add_argument('-j', '--json', dest="json", type=int, choices=[0,1], default=0,
+    arg_parser.add_argument('-j', '--json', dest="json", type=int, choices=[0, 1], default=0,
                             help="turns on/off (1/0) output in json")
 
-    arg_parser.add_argument('-s', '--specfile', dest="specfile", type=int, choices=[0,1], default=0,
+    arg_parser.add_argument('-s', '--specfile', dest="specfile", type=int, choices=[0, 1], default=0,
                             help="turns on/off (1/0) output as a specfile")
 
-    arg_parser.add_argument('-r', '--reduced', dest="reduced", type=int, choices=[0,1], default=1,
+    arg_parser.add_argument('-r', '--reduced', dest="reduced", type=int, choices=[0, 1], default=1,
                             help="turns on/off (1/0) reduced output in json, outputs only non-empty fields")
 
     arg_parser.add_argument('-c', '--config', dest="config", type=str,
                             help="path to configuration file")
 
-    arg_parser.add_argument('-p', '--pretty-print', dest="pretty", type=int, choices=[0,1], default=0,
+    arg_parser.add_argument('-p', '--pretty-print', dest="pretty", type=int, choices=[0, 1], default=0,
                             help="output specfile in a normalized form")
 
-    arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1,2], default=2,
+    arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1, 2], default=2,
                             help="choose between specfile 1.0 and 2.0 abstract models")
 
-    arg_parser.add_argument('--debug', dest="debug", type=int, choices=[0,1], default=0,
+    arg_parser.add_argument('--debug', dest="debug", type=int, choices=[0, 1], default=0,
                             help="for testing and debugging purposes")
 
-    arg_parser.add_argument('-g', '--go_spec', dest="go_spec", type=int, choices=[0,1], default=0,
+    arg_parser.add_argument('-g', '--go_spec', dest="go_spec", type=int, choices=[0, 1], default=0,
                             help="for testing and debugging purposes only, transforms specfile into go specfile")
 
     return arg_parser.parse_args()
@@ -102,19 +102,12 @@ def process_args(args):
     if args.go_spec:     # TODO how to determine?
         create_go_spec_model(Specfile2)
 
-        if args.reduced:
-            pretty_gospec = reduce_gospecfile()
-            # print(json.dumps(pretty_gospec, default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
-            # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(GoSpecfile), default=lambda o: o.__dict__, sort_keys=True))))
-            print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
-                json.dumps(pretty_gospec, default=lambda o: o.__dict__, sort_keys=True)),
-                                              default_flow_style=False, indent=4,
-                                              block_seq_indent=2, width=80))
-        else:
-            print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
-                json.dumps(GoSpecfile, default=lambda o: o.__dict__, sort_keys=True)),
-                                              default_flow_style=False, indent=4,
-                                              block_seq_indent=2, width=80))
+        # print(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
+        # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True))))
+        print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
+            json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True)),
+                                          default_flow_style=False, indent=4,
+                                          block_seq_indent=2, width=80))
 
 
 def main():
