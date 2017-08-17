@@ -26,7 +26,7 @@ metastring: "#00%0            %2\n#01%0               %2\n#02%0            %2\n#
     \ %2\n#07%0             %2\n#08%0             %2\n#09%0             %2\n#010%0\
     \             %2\n#011%0             %2\n#012%0                %2\n#013%0    \
     \    %2\n#10%0      %2\n#11%0      %2\n\n#12%0\n%4\n\n#13%0\n%4\n\n#14%0\n%4\n\
-    \n#15%0\n%4\n\n#16%0 %2 %3\n%4\n\n#30%0\n%4\n\n%4\n"
+    \n#15%0\n%4\n\n#16%0 %2 %3\n%40\n%41\n%42\n%43\n%44\n\n#30%0\n%4\n\n%4\n"
 metadata:
   - Summary: A program that ejects removable media using software control
   - Name: eject

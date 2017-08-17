@@ -1,9 +1,9 @@
 from __future__ import print_function
 import re
-
-from abstract_model import *
 from copy import deepcopy
 
+from abstract_model import SpecfileClass, BlockTypes
+from model_methods import create_metastring
 
 Specfile2 = SpecfileClass('Specfile 2.0')
 list_of_blocks = []
@@ -63,7 +63,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
                 number_of_next_item = 3
 
             Specfile2.metastring += metastring1[:metastring1.find('%' + str(number_of_next_item))]
-            metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%' + str(number_of_next_item)):]                
+            metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%' + str(number_of_next_item)):]
 
             transform_spec1_to_spec2(block['content'], None)
             del block['content']
@@ -71,16 +71,47 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
         if 'else_body' in block and block['else_body'] != []:
             Specfile2.metastring += metastring1[:metastring1.find('%5')]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%5'):]
-            
+
             transform_spec1_to_spec2(block['else_body'], None)
             del block['else_body']
 
         if 'keyword' in block and block['keyword'] == 'package':
             Specfile2.metastring += metastring1[:metastring1.find('%4')]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%4'):]
-            
+
             transform_spec1_to_spec2(block['content'], block['subname'])
             del block['content']
+
+        elif 'keyword' in block and block['keyword'] == 'files':    # TODO
+            block['content'] = re.findall(r'.*\s*', block['content'])
+            used_file_fields = 0
+            metastring = ''
+            to_be_removed = []
+            first = False
+
+            for idx, single_file in enumerate(block['content']):
+                if single_file == '':
+                    to_be_removed.append(idx)
+                elif single_file[0] == '#':
+                    metastring += '#5' + str(len(list_of_blocks[5]))
+                    list_of_blocks[5].append({"block_type": 5, "content": block['content'][idx]})
+                    metastring += create_metastring(list_of_blocks[5][-1], list_of_blocks[5][-1]['block_type'])
+                    to_be_removed.append(idx)
+                    first = True
+                else:
+                    if first:
+                        metastring += '#' + str(block['block_type']) + str(sequence_number)
+                        first = False
+                    metastring += block['content'][idx][:len(block['content'][idx]) - len(block['content'][idx].lstrip())]
+                    metastring += '%4' + str(used_file_fields)
+                    metastring += block['content'][idx][len(block['content'][idx].rstrip()):]
+                    block['content'][idx] = block['content'][idx][len(block['content'][idx]) - len(block['content'][idx].lstrip()):len(block['content'][idx].rstrip())]
+                    used_file_fields += 1
+
+            for record in reversed(to_be_removed):
+                del block['content'][record]
+
+            metastring1 = metastring1.replace('%4', metastring)
 
         # if 'end_keyword' in block and block['end_keyword'] != "":
         #     Specfile1_metastring_list = Specfile1_metastring_list[1:]
@@ -101,14 +132,25 @@ def get_outer_block_pos(block_list, wanted_block):
     return -1
 
 
-def process_blocks():
+def get_files_block_pos(block_list, wanted_block):
 
-    global metastring_list
+    count = 0
+
+    for block in block_list:
+        if 'keyword' in block and block['keyword'] == 'files' \
+        and (('name' in block and block['name'] == wanted_block['name']) or ('name' not in block and 'name' not in wanted_block)):
+            return count
+        count += 1
+    return -1
+
+
+def process_blocks():
 
     block_list = []
     metastring1 = ""
 
     for metastring2 in metastring_list:
+        processed_already = False
 
         if int(metastring2[0]) == 6 and int(metastring2[metastring2.find('%') + 1]) != 0:
             pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
@@ -117,7 +159,7 @@ def process_blocks():
             if int(metastring2[metastring2.find('%') + 1]) == 0:
                 metastring1 += "#" + metastring2
             else:
-                pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)            
+                pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
                 metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
         else:
             metastring1 += '#' + metastring2
@@ -131,6 +173,45 @@ def process_blocks():
                 list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] = deepcopy(block_list[pos+1:])
                 block_list = block_list[:pos]
 
+        elif int(metastring2[0]) == 1 and list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['keyword'] == 'files':
+            merged_content = ''
+            last_field_id = len(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']) - 1
+            file_records = re.findall(r'%4[^%]*', metastring2)
+            processed_already = False
+            if list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0][0] == '#':
+                processed_already = True
+            for single_file in file_records:
+                files_line_id = int(re.match(r'\d+', single_file[2:]).group())
+
+                if processed_already:
+                    files_line_id = 1
+
+                merged_content += list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][files_line_id]
+                if files_line_id != last_field_id:
+                    merged_content += single_file[len(str(files_line_id)) + 2:]
+                else:
+                    metastring1 += single_file[len(str(files_line_id)) + 2:]
+                #     metastring1 = metastring1.replace('4' + single_file[:len(str(files_line_id))], single_file[len(str(files_line_id)):])
+                if files_line_id == 0:
+                    metastring1 = metastring1.replace(single_file, '%4')
+                else:
+                    metastring1 = metastring1.replace(single_file, '')
+
+                if processed_already:
+                    del list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][1]
+
+            if not processed_already:
+                del list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][1:files_line_id]
+                list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0] = '#' + merged_content                
+            else:
+                pos = get_files_block_pos(block_list, list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
+                if pos != -1:
+                    block_list[pos]['content'] += merged_content
+                # list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0] += merged_content
+
+            if len(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']) == 2:
+                list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] = list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0][1:]
+
         elif int(metastring2[0]) == 6:
             if int(metastring2[metastring2.find('%') + 1]) == 3 or (int(metastring2[metastring2.find('%') + 1]) == 5 and 'content' not in list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]):
                 pos = get_outer_block_pos(block_list, list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
@@ -142,7 +223,8 @@ def process_blocks():
                 list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['else_body'] = block_list[pos+1:]
                 block_list = block_list[:pos]
 
-        block_list.append(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
+        if not processed_already:
+            block_list.append(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
 
     return (block_list, metastring1)
 
@@ -172,7 +254,6 @@ def transform_spec2_to_spec1(Specfile2):
 
 def create_spec_2_model(Specfile1):
 
-    global list_of_blocks
     global Specfile1_metastring_list
 
     metastring_list = Specfile1.metastring.split('#')
