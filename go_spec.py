@@ -13,8 +13,6 @@ GoSpecfile = SpecfileClass('GO spec')
 
 def reduce_gospecfile():
 
-    global GoSpecfile
-
     reduced_GoSpecfile = deepcopy(GoSpecfile)
 
     for (block_list, reduced_block_list) in zip(sorted(GoSpecfile.__dict__.iteritems()), sorted(reduced_GoSpecfile.__dict__.iteritems())):
@@ -33,8 +31,8 @@ def reduce_gospecfile():
                                 to_be_removed.append([index, neco])
                             elif neco2['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)buildrequires', neco2['key']) is not None:
                                 append_dependency(reduced_block_list[1][index], 'buildtime', neco2)
-                                to_be_removed.append([index, neco])                                    
-                            else:          
+                                to_be_removed.append([index, neco])
+                            else:
                                 reduced_block_list[1][index][neco] = gospecfile_to_print(neco2)
                         for record in reversed(sorted(to_be_removed)):
                             del reduced_block_list[1][record[0]][record[1]]
@@ -57,7 +55,7 @@ def reduce_gospecfile():
                             setattr(reduced_GoSpecfile, reduced_block_list[0], append_dependency(reduced_block_list[1], 'buildtime', single_record))
                             del reduced_block_list[1][index]
                                 # reduced_block_list[1] = append_dependency(reduced_block_list[1], 'buildtime', single_record)
-                                # to_be_removed.append([index, neco])                                    
+                                # to_be_removed.append([index, neco])
                         else:
                             reduced_block_list[1][index] = gospecfile_to_print(block_list[1][index])
 
@@ -66,11 +64,6 @@ def reduce_gospecfile():
                 reduced_GoSpecfile.history = gospecfile_to_print(block_list[1])
 
     return reduced_GoSpecfile
-
-
-def parse_files_section(files_content):
-
-    return filter(None, files_content.split('\n'))
 
 
 def append_dependency(current_unit, keyword, header_tag):
@@ -124,7 +117,7 @@ def gospecfile_to_print(single_record):
         elif 'keyword' in single_record and 'content' in single_record:
             if single_record['keyword'] == 'changelog':
                 length = len(single_record['content']) - 1
-                for idx, single_log in enumerate(single_record['content']):
+                for idx, single_log in enumerate(single_record['content']):         # TODO reversed???
                     single_record[length - idx] = parse_changelog(single_log)
                     create_metastring(single_record[length - idx], BlockTypes.ChangelogTagType)
                     if 'keyword' in single_record:
@@ -138,7 +131,7 @@ def gospecfile_to_print(single_record):
                 parsed_record = {}
                 if 'subname' in single_record and single_record['subname'] is not None:
                     parsed_record.update({'meta':{'file':single_record['subname']}})
-                parsed_record.update({'list':parse_files_section(single_record['content'])})
+                parsed_record.update({'list':single_record['content']})
                 single_record = {'files':parsed_record}
 
             else:
@@ -169,9 +162,7 @@ def gospecfile_to_print(single_record):
 
 def replace_field_number(prev_section_count, replacing):
 
-    global GoSpecfile
-
-    to_be_replaced_list = re.findall(r'#' + str(replacing[0]) + r'\d*', GoSpecfile.metastring)
+    to_be_replaced_list = re.findall(r'#' + str(replacing[0]), GoSpecfile.metastring)
     for replace_record in to_be_replaced_list:
         GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str(replacing[1]) + str(prev_section_count))
 
@@ -267,7 +258,7 @@ def create_go_spec_model(Specfile2):
             replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])
             # else:           # TODO
             #     GoSpecfile.metadata.append(macro_definition)
-            #     replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])            
+            #     replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])
 
     if Specfile2.SectionTags:
         # to_be_removed = []
@@ -296,7 +287,7 @@ def create_go_spec_model(Specfile2):
                 #                 if list_of_blocks[int(single_inner_section[0])][int(single_inner_section[1:single_inner_section.find('%')])]['block_type'] == BlockTypes.HeaderTagType:
                 #                     list_of_blocks[int(single_inner_section[0])][int(single_inner_section[1:single_inner_section.find('%')])]['name'] = single_section['subname']
                 #                     GoSpecfile.unit_list.append(list_of_blocks[int(single_inner_section[0])][int(single_inner_section[1:single_inner_section.find('%')])])
-                #             to_be_removed.append([int(single_inner_section[0]), int(single_inner_section[1:single_inner_section.find('%')])])                            
+                #             to_be_removed.append([int(single_inner_section[0]), int(single_inner_section[1:single_inner_section.find('%')])])
 
             elif ('name' in single_section and single_section['name'] is not None) \
             or ('subname' in single_section and single_section['subname'] is not None \
@@ -318,12 +309,12 @@ def create_go_spec_model(Specfile2):
 
     if Specfile2.Comments:
         for index in range(len(Specfile2.Comments)):
-            replace_field_number(index, [5, 4])
+            replace_field_number(index, [str(5) + str(index), 4])
         prev_section_count += len(Specfile2.Comments)
         GoSpecfile.comments = Specfile2.Comments
 
-    if Specfile2.MacroConditions:   # TODO + parse content
-        print(str(Specfile2.MacroConditions))
+    # if Specfile2.MacroConditions:   # TODO + parse content
+    #     print(str(Specfile2.MacroConditions))
 
     process_unit_list()
     GoSpecfile.metastring = GoSpecfile.metastring.replace('#!', '#')
