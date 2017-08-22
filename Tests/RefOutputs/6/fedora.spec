@@ -58,7 +58,6 @@ unit_list:
               - /usr/share/%{name}/cmd/lint/*.py
               - /usr/share/%{name}/cmd/review-request/*.py
               - /usr/share/%{name}/cmd/clean-resources/*.py
-              - '#%{_sysconfdir}/bash_completion.d/gofed-base_bash_completion'
               - /usr/share/man/man1/gofed.1.gz
   -   - Summary: Set of commands for scanning golang projects
       - BuildArch: noarch
@@ -68,12 +67,6 @@ unit_list:
             \ i.e.\ncomparison of APIs of two golang projects,\ngenerator of xml files\
             \ representing exported symbols and\nscan of golang packages and generator\
             \ of dependency graph."
-      - runtime:
-            dependencies:
-              - name: '%{name} = %{version}-%{release}'
-              - name: '%{name}-cmd-dnfs-scan = %{version}-%{release}'
-              - name: python-cmdsignature = %{version}-%{release}
-              - name: graphviz
       - files:
             list:
               - /usr/share/%{name}/cmd/tools/*.py
@@ -86,7 +79,12 @@ unit_list:
               - /usr/share/%{name}/cmd/tools/update
               - /usr/share/%{name}/cmd/bump-spec/*.py
               - /usr/share/%{name}/cmd/wizard/*.py
-              - '#%{_sysconfdir}/bash_completion.d/gofed-build_bash_completion'
+      - runtime:
+            dependencies:
+              - name: '%{name} = %{version}-%{release}'
+              - name: '%{name}-cmd-dnfs-scan = %{version}-%{release}'
+              - name: python-cmdsignature = %{version}-%{release}
+              - name: graphviz
   -   - Summary: Set of commands for building golang projects
       - BuildArch: noarch
       - Conflicts: gofed-build < 1.0.0
@@ -95,11 +93,6 @@ unit_list:
             pulls, pushes, updates, overrides and other commands\nthat can be used\
             \ for package maitainance.\n\nThe commands support running one command\
             \ on multiple branches at once."
-      - runtime:
-            dependencies:
-              - name: '%{name} = %{version}-%{release}'
-              - name: '%{name}-cmd-dnfs-build = %{version}-%{release}'
-              - name: python-cmdsignature = %{version}-%{release}
       - files:
             list:
               - /usr/share/%{name}/cmd/goapidiff/*.py
@@ -108,10 +101,20 @@ unit_list:
               - /usr/share/%{name}/cmd/scan-distro/*.py
               - /usr/share/%{name}/cmd/scan-packages/*.py
               - /usr/share/%{name}/cmd/unit-test/*.py
-              - '#%{_sysconfdir}/bash_completion.d/gofed-scan_bash_completion'
+      - runtime:
+            dependencies:
+              - name: '%{name} = %{version}-%{release}'
+              - name: '%{name}-cmd-dnfs-build = %{version}-%{release}'
+              - name: python-cmdsignature = %{version}-%{release}
   -   - Summary: Gofedlib
       - name: gofedlib
       - description: Gofedlib
+      - files:
+            list:
+              - '%license LICENSE '
+              - '%{python2_sitelib}/gofedlib'
+              - '%{python2_sitelib}/gofedlib-?.?.???-py2.7.egg-info'
+              - '%{_bindir}/gofedlib-cli'
       - buildtime:
             dependencies:
               - name: python-fedora python-jinja2 python-markupsafe
@@ -119,16 +122,15 @@ unit_list:
             dependencies:
               - name: python-fedora python-jinja2 python-markupsafe python-PyGithub
                     python2-hglib
-      - files:
-            list:
-              - '%license LICENSE '
-              - '%{python2_sitelib}/gofedlib'
-              - '%{python2_sitelib}/gofedlib-?.?.???-py2.7.egg-info'
-              - '%{_bindir}/gofedlib-cli'
   -   - Summary: Gofed resources
       - BuildArch: noarch
       - name: resources
       - description: Gofed resources
+      - files:
+            list:
+              - '%license LICENSE '
+              - '%{python2_sitelib}/gofedresources'
+              - '%{python2_sitelib}/gofedresources-?.?.?-py2.7.egg-info'
       - buildtime:
             dependencies:
               - name: python2-hglib
@@ -136,15 +138,15 @@ unit_list:
             dependencies:
               - name: python2-hglib
               - name: '%{name}-gofedlib = %{version}-%{release}'
-      - files:
-            list:
-              - '%license LICENSE '
-              - '%{python2_sitelib}/gofedresources'
-              - '%{python2_sitelib}/gofedresources-?.?.?-py2.7.egg-info'
   -   - Summary: Gofed infra
       - BuildArch: noarch
       - name: infra
       - description: Gofed infra
+      - files:
+            list:
+              - '%license LICENSE '
+              - '%{python2_sitelib}/gofedinfra'
+              - '%{python2_sitelib}/gofedinfra-?.?.?-py2.7.egg-info'
       - buildtime:
             dependencies:
               - name: python-jsonschema koji GitPython python-pycurl python2-hglib
@@ -155,21 +157,11 @@ unit_list:
                     python-gitdb
               - name: '%{name}-gofedlib = %{version}-%{release}'
               - name: '%{name}-resources = %{version}-%{release}'
-      - files:
-            list:
-              - '%license LICENSE '
-              - '%{python2_sitelib}/gofedinfra'
-              - '%{python2_sitelib}/gofedinfra-?.?.?-py2.7.egg-info'
   -   - Summary: Run gofed commands as a container
       - BuildArch: noarch
       - ExclusiveArch: '%{ix86} x86_64 %{arm} aarch64 ppc64le s390x %{mips}'
       - name: docker
       - description: Run gofed commands as a container
-      - runtime:
-            dependencies:
-              - name: '%{name}-cmd-dnfs-base = %{version}-%{release}'
-              - name: python-cmdsignature = %{version}-%{release}
-              - name: docker
       - files:
             meta:
                 file: python-cmdsignature
@@ -177,10 +169,18 @@ unit_list:
               - '%license LICENSE '
               - '%{python2_sitelib}/cmdsignature'
               - '%{python2_sitelib}/cmdsignature-?.?.?-py2.7.egg-info'
+      - runtime:
+            dependencies:
+              - name: '%{name}-cmd-dnfs-base = %{version}-%{release}'
+              - name: python-cmdsignature = %{version}-%{release}
+              - name: docker
   -   - Summary: Command signature python module
       - BuildArch: noarch
       - name: python-cmdsignature
       - description: Command signature python module
+      - files:
+            list:
+              - '%{_bindir}/gofed-docker'
       - buildtime:
             dependencies:
               - name: PyYAML
@@ -188,29 +188,42 @@ unit_list:
             dependencies:
               - name: python >= 2.7.5
               - name: PyYAML
-      - files:
-            list:
-              - '%{_bindir}/gofed-docker'
+metastring: "#014%0 %1 %3\n#015%0 %1        %3\n#016%0 %1    %3\n#017%0 %1       \
+    \ \t%3\n#018%0 %1            %3\n#019%0 %1 %3\n\n#020%0 %1 %3\n#021%0 %1 %3\n\n\
+    #022%0 %1 %3\n#023%0 %1 %3\n\n#0150%0 %1 %3\n#0151%0 %1 %3\n\n#0152%0 %1 %3\n\
+    #0153%0 %1 %3\n\n#0154%0 %1 %3\n#0155%0 %1     %3\n\n#0156%0 %1 %3\n#0157%0 %1\
+    \ %3\n#0158%0 %1 %3\n#0159%0 %1 %3\n\n#60%0 %1\n#0160%0 %1%2 %3 \n#60%5\n\n#00%0\t\
+    \t%2\n#01%0\t%2\n#02%0\t%2\n#03%0\t%2\n#04%0\t%2\n#05%0\t\t%2\n#06%0\t%2\n#07%0\t\
+    %2\n#08%0\t%2\n#09%0\t%2\n#010%0\t%2\n\n#011%0         %2\n\n#40%0\n#012%0  %2\n\
+    #41%0\n#10%0  %2\n\n#11%0  %2\n#12%0  %2\n#13%0  %2\n\n#14%0 %2\n#15%0 %2\n\n\
+    #16%0 %2\n#17%0 %2\n#18%0 %2\n#19%0 %2\n#110%0 %2\n\n#024%0 %2\n\n#111%0\n%4\n\
+    \n#11%0 %3\n#025%0 %2\n#026%0 %2\n\n#12%0 %1\n%4\n\n#11%4#13%0 %3\n#027%0 %2\n\
+    #028%0 %2\n\n#14%0 %1\n%4\n\n#13%4#15%0 %3\n#029%0 %2\n#030%0 %2\n\n#16%0 %1\n\
+    %4\n\n#15%4#17%0 %3\n#031%0 %2\n#032%0 %2\n\n#18%0 %1\n%4\n\n#17%4#19%0 %3\n#033%0\
+    \ %2\n#034%0 %2\n#035%0 %2\n#036%0 %2\n#037%0 %2\n#038%0 %2\n#039%0 %2\n\n\n#110%0\
+    \ %1\n%4\n\n#19%4#111%0 %3\n#040%0 %2\n#041%0 %2\n#042%0 %2\n#043%0 %2\n#044%0\
+    \ %2\n#045%0 %2\n\n#112%0 %1\n%4\n\n#111%4#113%0 %3\n#046%0 %2\n#047%0 %2\n#048%0\
+    \ %2\n\n#114%0 %1\n%4\n\n#113%4#115%0 %3\n#049%0 %2\n#050%0 %2\n#051%0 %2\n#052%0\
+    \ %2\n#053%0 %2\n\n#116%0 %1\n%4\n\n#115%4#117%0 %3\n#054%0 %2\n#055%0 %2\n#056%0\
+    \ %2\n#057%0 %2\n#058%0 %2\n#059%0 %2\n\n#118%0 %1\n%4\n\n#117%4#119%0 %3\n#060%0\
+    \ %2\n#061%0 %2\n#062%0 %2\n#063%0 %2\n#064%0 %2\n#065%0 %2\n\n#120%0 %1\n%4\n\
+    \n#119%4#121%0 %2 %3\n#066%0 %2\n#067%0 %2\n#068%0 %2\n#069%0 %2\n#070%0 %2\n\n\
+    #122%0 %2 %3\n%4\n\n#121%4#134%0\n%4\n\n#135%0\n%4\n\n#136%0\n%4\n\n#137%0\n%4\n\
+    \n#138%0\n%4\n#30%0%1%2%3\n\n#128%0 %1\n%40\n%41\n%42\n%43\n%44\n%45\n%46\n%47\n\
+    %48\n%49\n%410\n\n#129%0 %1\n%40\n%41\n%42\n%43\n\n#130%0 %1\n%40\n%41\n%42\n\
+    %43\n%44\n%45\n%46\n\n#131%0 %1\n%40\n%41\n%42\n%43\n%44\n%45\n%46\n%47\n%48\n\
+    %49\n%410\n%411\n%412\n#42%0\n#131%413\n\n#132%0 %1\n%40\n%41\n%42\n%43\n%44\n\
+    %45\n%46\n%47\n%48\n%49\n#43%0\n\n#133%0 %1\n%40\n%41\n%42\n%43\n%44\n%45\n#44%0\n\
+    \n#134%0 %1\n%40 \n%41\n%42\n%43\n\n#135%0 %1\n%40 \n%41\n%42\n\n#136%0 %1\n%40\
+    \ \n%41\n%42\n\n#137%0 %2 %3\n%40 \n%41\n%42\n\n#138%0 %1\n%40\n\n#150%0\n%40\n\
+    %41\n%42\n%43\n#45%0\n#150%44\n%45\n%46\n\n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
+    \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
+    \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n"
 main_unit:
   - description: "Tool to automize packaging of golang devel source codes.\nThe main\
         \ goal is to automatize packaging, i.e. provide spec file generators,\ndiscovery\
         \ of tests, imported and provided packages,\ncheck of up-to-date state of\
         \ dependencies,\npreparation of review and\ncheck of spec file (gofed lint)."
-  - runtime:
-        dependencies:
-          - name: bash-completion
-          - name: '%{name}-base = %{version}-%{release}'
-          - name: '%{name}-infra = %{version}-%{release}'
-          - name: python-cmdsignature = %{version}-%{release}
-          - name: '%{name}-cmd-dnfs-base = %{version}-%{release}'
-          - name: coreutils, rpm-build, openssh-clients, tar
-          - name: python >= 2.7.5, bash, wget, rpmdevtools, rpmlint
-  - buildtime:
-        dependencies:
-          - name: python-setuptools
-          - name: python-devel
-          - name: python >= 2.7.5
-          - name: '%{?go_compiler:compiler(go-compiler)}%{!?go_compiler:golang}'
   - prep: "%setup -q -n %{cmdsignature_repo}-%{cmdsignature_commit} -T -b 1\n%setup\
         \ -q -n %{gofedlib_repo}-%{gofedlib_commit} -T -b 2\n%setup -q -n %{gofedresources_repo}-%{gofedresources_commit}\
         \ -T -b 3\n%setup -q -n %{gofedinfra_repo}-%{gofedinfra_commit} -T -b 4\n\
@@ -248,17 +261,31 @@ main_unit:
         )\nrm -r %{buildroot}/usr/share/%{name}/config"
   - pre: "getent group gofed >/dev/null || groupadd -r gofed\ngetent passwd gofed\
         \ >/dev/null || useradd -r -g gofed -d / -s /sbin/nologin \\\n        -c \"\
-        Gofed user\" gofed"
+        Gofed user\" gofed\n\n#define license tag if not already defined"
   - files:
         list:
           - '%license LICENSE'
           - '%doc *.md'
           - '%config(noreplace) /etc/gofed.conf'
           - /usr/share/%{name}/modules
-          - '#%{_mandir}/man1/gofed.1.gz'
           - '%attr(-, gofed, gofed) %{_sharedstatedir}/%{name}'
           - /usr/bin/%{name}
           - /usr/share/%{name}/*.py
+  - runtime:
+        dependencies:
+          - name: bash-completion
+          - name: '%{name}-base = %{version}-%{release}'
+          - name: '%{name}-infra = %{version}-%{release}'
+          - name: python-cmdsignature = %{version}-%{release}
+          - name: '%{name}-cmd-dnfs-base = %{version}-%{release}'
+          - name: coreutils, rpm-build, openssh-clients, tar
+          - name: python >= 2.7.5, bash, wget, rpmdevtools, rpmlint
+  - buildtime:
+        dependencies:
+          - name: python-setuptools
+          - name: python-devel
+          - name: python >= 2.7.5
+          - name: '%{?go_compiler:compiler(go-compiler)}%{!?go_compiler:golang}'
 history:
     '24':
         comment: '- Compile the docker one only for supported arches'
@@ -406,7 +433,10 @@ history:
 comments:
   - '# e.g. el6 has ppc64 arch without gcc-go, so EA tag is required'
   - '# If go_compiler is not set to 1, there is no virtual provide. Use golang instead.'
-  - '#define license tag if not already defined'
+  - '#%{_sysconfdir}/bash_completion.d/gofed-base_bash_completion'
+  - '#%{_sysconfdir}/bash_completion.d/gofed-build_bash_completion'
+  - '#%{_sysconfdir}/bash_completion.d/gofed-scan_bash_completion'
+  - '#%{_mandir}/man1/gofed.1.gz'
 metadata:
   - Name: gofed
   - Version: 1.0.0
