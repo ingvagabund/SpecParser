@@ -17,6 +17,8 @@ main_unit:
           - '%{_bindir}/*'
           - '%{_sbindir}/*'
           - '%{_mandir}/man1/*'
+  - excludearch:
+      - s390 s390x
   - buildtime:
         dependencies:
           - name: libtool
@@ -41,7 +43,6 @@ metadata:
   - Patch5: eject-2.1.5-lock.patch
   - Patch6: eject-2.1.5-umount.patch
   - URL: http://www.pobox.com/~tranter
-  - ExcludeArch: s390 s390x
 history:
     '1':
         comment: '- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild'

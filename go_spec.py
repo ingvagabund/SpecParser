@@ -9,6 +9,7 @@ from model_2_methods import list_of_blocks
 
 
 GoSpecfile = SpecfileClass('GO spec')
+ExcludeArch = []
 
 
 def reduce_gospecfile():
@@ -32,10 +33,16 @@ def reduce_gospecfile():
                             elif neco2['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)buildrequires', neco2['key']) is not None:
                                 append_dependency(reduced_block_list[1][index], 'buildtime', neco2)
                                 to_be_removed.append([index, neco])
+                            elif neco2['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)excludearch', neco2['key']) is not None:
+                                append_dependency(reduced_block_list[1], 'excludearch', neco2)
+                                to_be_removed.append([index, neco])
                             else:
                                 reduced_block_list[1][index][neco] = gospecfile_to_print(neco2)
+                                
                         for record in reversed(sorted(to_be_removed)):
                             del reduced_block_list[1][record[0]][record[1]]
+                            if reduced_block_list[1][record[0]] == []:
+                                del reduced_block_list[1][record[0]]
                 else:
                     if 'block_type' not in single_record:
                         for keyword in single_record:
@@ -54,8 +61,9 @@ def reduce_gospecfile():
                         elif single_record['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)buildrequires', single_record['key']) is not None:
                             setattr(reduced_GoSpecfile, reduced_block_list[0], append_dependency(reduced_block_list[1], 'buildtime', single_record))
                             del reduced_block_list[1][index]
-                                # reduced_block_list[1] = append_dependency(reduced_block_list[1], 'buildtime', single_record)
-                                # to_be_removed.append([index, neco])
+                        elif single_record['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)excludearch', single_record['key']) is not None:
+                            setattr(reduced_GoSpecfile, reduced_block_list[0], append_dependency(reduced_block_list[1], 'excludearch', single_record))
+                            del reduced_block_list[1][index]
                         else:
                             reduced_block_list[1][index] = gospecfile_to_print(block_list[1][index])
 
@@ -69,19 +77,28 @@ def reduce_gospecfile():
 def append_dependency(current_unit, keyword, header_tag):
 
     if current_unit == []:
-        current_unit = {keyword:{'dependencies':[{'name':header_tag['content']}]}}
+        if keyword == 'excludearch':
+            current_unit = {keyword:[header_tag['content']]}
+        else:        
+            current_unit = {keyword:{'dependencies':[{'name':header_tag['content']}]}}
     else:
         found = False
         for single_record in current_unit:
             if keyword in single_record:
                 found = True
-                if 'dependencies' in single_record[keyword]:
-                    single_record[keyword]['dependencies'].append({'name':header_tag['content']})
+                if keyword == 'excludearch':
+                    single_record[keyword].append(header_tag['content'])
                 else:
-                    single_record[keyword]['dependencies'] = [{'name':header_tag['content']}]
+                    if 'dependencies' in single_record[keyword]:
+                        single_record[keyword]['dependencies'].append({'name':header_tag['content']})
+                    else:
+                        single_record[keyword]['dependencies'] = [{'name':header_tag['content']}]
 
         if found is False:
-            current_unit.append({keyword:{'dependencies':[{'name':header_tag['content']}]}})
+            if keyword == 'excludearch':
+                current_unit.append({keyword:[header_tag['content']]})
+            else:
+                current_unit.append({keyword:{'dependencies':[{'name':header_tag['content']}]}})
 
     return current_unit
 
@@ -98,12 +115,17 @@ def gospecfile_to_print(single_record):
                 predicate_list.append('NOT ' + single_predicate[0])
 
     if single_record['block_type'] == BlockTypes.HeaderTagType:
-        if re.match(r'(?i)requires', single_record['key']) is not None:
-            GoSpecfile.main_unit = append_dependency(GoSpecfile.main_unit, 'runtime', single_record)
-        elif re.match(r'(?i)buildrequires', single_record['key']) is not None:
-            GoSpecfile.main_unit = append_dependency(GoSpecfile.main_unit, 'buildtime', single_record)
-        else:
-            single_record = {single_record['key']:single_record['content']}
+        # if re.match(r'(?i)requires', single_record['key']) is not None:
+        #     GoSpecfile.main_unit = append_dependency(GoSpecfile.main_unit, 'runtime', single_record)
+        # elif re.match(r'(?i)buildrequires', single_record['key']) is not None:
+        #     GoSpecfile.main_unit = append_dependency(GoSpecfile.main_unit, 'buildtime', single_record)
+        # elif re.match(r'(?i)excludearch', single_record['key']) is not None:
+        #     if GoSpecfile.unit_list != []:
+        #         GoSpecfile.unit_list = append_dependency(GoSpecfile.unit_list, 'excludearch', single_record)
+        #     else:
+        #         GoSpecfile.main_unit = append_dependency(GoSpecfile.main_unit, 'excludearch', single_record)
+        # else:
+        single_record = {single_record['key']:single_record['content']}
 
     elif single_record['block_type'] == BlockTypes.MacroDefinitionType:
         if 'name' in single_record and 'body' in single_record:
@@ -222,8 +244,18 @@ def process_unit_list():
     return
 
 
+def add_excludearch_tags():
+
+    if GoSpecfile.unit_list != []:
+        for single_unit in GoSpecfile.unit_list:
+            single_unit.append(ExcludeArch[0:])
+    else:
+        GoSpecfile.main_unit.append(ExcludeArch[0:])
+
+
 def create_go_spec_model(Specfile2):
 
+    global ExcludeArch
     GoSpecfile.metastring = Specfile2.metastring
 
     prev_section_count = 0
@@ -241,10 +273,11 @@ def create_go_spec_model(Specfile2):
                     prev_section_count += 1
                     GoSpecfile.main_unit.append(header_tag)
 
-                # elif re.match(r'(?i)excludearch', header_tag['key']) is not None:     # TODO
+                elif re.match(r'(?i)excludearch', header_tag['key']) is not None:
                 #     replace_field_number(prev_section_count, ["0" + str(index), 1])
                 #     prev_section_count += 1
                 #     GoSpecfile.main_unit.append(header_tag)
+                    ExcludeArch.append(header_tag)
 
                 elif 'AP' not in header_tag or header_tag['AP'] == '':
                     GoSpecfile.metadata.append(header_tag)
@@ -253,12 +286,8 @@ def create_go_spec_model(Specfile2):
 
     if Specfile2.MacroDefinitions:
         for index, macro_definition in enumerate(list_of_blocks[2]):
-            # if 'AP' not in macro_definition or macro_definition['AP'] == '':
             GoSpecfile.metadata.append(macro_definition)
             replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])
-            # else:           # TODO
-            #     GoSpecfile.metadata.append(macro_definition)
-            #     replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])
 
     if Specfile2.SectionTags:
         # to_be_removed = []
@@ -317,4 +346,6 @@ def create_go_spec_model(Specfile2):
     #     print(str(Specfile2.MacroConditions))
 
     process_unit_list()
+    if ExcludeArch != []:
+        add_excludearch_tags()
     GoSpecfile.metastring = GoSpecfile.metastring.replace('#!', '#')
