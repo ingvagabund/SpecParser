@@ -135,11 +135,14 @@ def get_outer_block_pos(block_list, wanted_block):
 def get_files_block_pos(block_list, wanted_block):
 
     count = 0
-
     for block in block_list:
-        if 'keyword' in block and block['keyword'] == 'files' \
-        and (('name' in block and block['name'] == wanted_block['files']) or ('name' not in block and 'files' not in wanted_block)):
-            return count
+        if 'keyword' in block and block['keyword'] == 'files':
+            if wanted_block['files'] is None:
+                if (('name' in block and block['name'] is None) or 'name' not in block) and \
+                (('subname' in block and block['subname'] is None) or 'subname' not in block):
+                    return count
+            elif ('name' in block and block['name'] == wanted_block['files']) or ('name' not in block and 'files' not in wanted_block):
+                return count
         count += 1
     return -1
 
@@ -175,19 +178,25 @@ def process_blocks():
 
         elif int(metastring2[0]) == 1 and list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['keyword'] == 'files':
             merged_content = ''
-            last_field_id = len(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']) - 1
+
+            if isinstance(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'], list):
+                last_field_id = len(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']) - 1
+            else:
+                last_field_id = 1 
             file_records = re.findall(r'%4[^%]*', metastring2)
             first_record = True
             original_files_line_id = 0
             processed_already = False
+            subtract = 0
 
             for single_file in file_records:
                 files_line_id = int(re.match(r'\d+', single_file[2:]).group())
                 original_files_line_id = files_line_id
 
                 if first_record and files_line_id != 0:
-                    files_line_id = 1
+                    subtract = files_line_id - 1
                     processed_already = True
+                files_line_id -= subtract
 
                 if first_record:
                     first_record = False
@@ -203,20 +212,16 @@ def process_blocks():
                 if files_line_id == 0:
                     metastring1 = metastring1.replace(single_file, '%4')
                 elif processed_already and files_line_id == last_field_id:
-                    metastring1 = metastring1.replace(single_file, '')
+                    metastring1 = metastring1.replace(re.search(r'\s*#\d+' + single_file, metastring1).group(), '')
                 else:
                     metastring1 = metastring1.replace(single_file, '')
-
-                if processed_already:
-                    del list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][1]
 
             if not processed_already:
                 del list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0:files_line_id]
                 list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0] = merged_content
             else:
-                block_list[pos]['content'][0] += merged_content
-                pos = metastring1.find('#' + metastring2[:metastring2.find('%')], metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
-                metastring1 = metastring1[:pos] + metastring1[pos + 1 + len(str(metastring2[:metastring2.find('%')])):]
+                del list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][1:files_line_id + 1]
+                list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0] += merged_content
 
             if len(list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']) == 1:
                 list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] = list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'][0]
@@ -229,11 +234,26 @@ def process_blocks():
             if pos != -1:
                 comment_metastring = re.findall(r'\s*#5' + metastring2[1:metastring2.find('%')] + r'[^#]*', metastring1)[0]
                 pre_comment_whitespace = re.findall(r'[^#]*', comment_metastring)[0]
-                post_comment_whitespace = comment_metastring[comment_metastring.rfind(r'\s*'):]
-                block_list[pos]['content'][0] += pre_comment_whitespace
-                block_list[pos]['content'][0] += list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']
-                block_list[pos]['content'][0] += post_comment_whitespace
-                metastring1 = metastring1.replace(comment_metastring, '')
+                post_comment_whitespace = re.search(r'\s*$', comment_metastring).group() #comment_metastring[comment_metastring.find(r'\s*$'):]
+
+                # due to some unicode assignment failures
+                tmp = []
+                if isinstance(block_list[pos]['content'], list):
+                    tmp.append(block_list[pos]['content'][0] + pre_comment_whitespace + list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] + post_comment_whitespace)
+                    tmp += block_list[pos]['content'][1:]
+                else:
+                    tmp.append(block_list[pos]['content'] + pre_comment_whitespace + list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'])
+
+                del block_list[pos]['content']
+                block_list[pos]['content'] = tmp
+                # block_list[pos]['content'][0] += pre_comment_whitespace
+                # block_list[pos]['content'][0] += list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']
+                # block_list[pos]['content'][0] += post_comment_whitespace
+                if len(block_list[pos]['content']) == 1:
+                    block_list[pos]['content'] = block_list[pos]['content'][0]
+                    metastring1 = metastring1.replace(comment_metastring, post_comment_whitespace)
+                else:
+                    metastring1 = metastring1.replace(comment_metastring, '')
 
         elif int(metastring2[0]) == 6:
             if int(metastring2[metastring2.find('%') + 1]) == 3 or (int(metastring2[metastring2.find('%') + 1]) == 5 and 'content' not in list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]):
