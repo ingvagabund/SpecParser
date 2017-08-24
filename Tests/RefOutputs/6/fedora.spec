@@ -69,16 +69,12 @@ unit_list:
             \ of dependency graph."
       - files:
             list:
-              - /usr/share/%{name}/cmd/tools/*.py
-              - /usr/share/%{name}/cmd/tools/bbobranches
-              - /usr/share/%{name}/cmd/tools/build
-              - /usr/share/%{name}/cmd/tools/gcp
-              - /usr/share/%{name}/cmd/tools/pull
-              - /usr/share/%{name}/cmd/tools/push
-              - /usr/share/%{name}/cmd/tools/scratch-build
-              - /usr/share/%{name}/cmd/tools/update
-              - /usr/share/%{name}/cmd/bump-spec/*.py
-              - /usr/share/%{name}/cmd/wizard/*.py
+              - /usr/share/%{name}/cmd/goapidiff/*.py
+              - /usr/share/%{name}/cmd/approx-deps/*.py
+              - /usr/share/%{name}/cmd/scan-deps/*.py
+              - /usr/share/%{name}/cmd/scan-distro/*.py
+              - /usr/share/%{name}/cmd/scan-packages/*.py
+              - /usr/share/%{name}/cmd/unit-test/*.py
       - runtime:
             dependencies:
               - name: '%{name} = %{version}-%{release}'
@@ -95,12 +91,16 @@ unit_list:
             \ on multiple branches at once."
       - files:
             list:
-              - /usr/share/%{name}/cmd/goapidiff/*.py
-              - /usr/share/%{name}/cmd/approx-deps/*.py
-              - /usr/share/%{name}/cmd/scan-deps/*.py
-              - /usr/share/%{name}/cmd/scan-distro/*.py
-              - /usr/share/%{name}/cmd/scan-packages/*.py
-              - /usr/share/%{name}/cmd/unit-test/*.py
+              - /usr/share/%{name}/cmd/tools/*.py
+              - /usr/share/%{name}/cmd/tools/bbobranches
+              - /usr/share/%{name}/cmd/tools/build
+              - /usr/share/%{name}/cmd/tools/gcp
+              - /usr/share/%{name}/cmd/tools/pull
+              - /usr/share/%{name}/cmd/tools/push
+              - /usr/share/%{name}/cmd/tools/scratch-build
+              - /usr/share/%{name}/cmd/tools/update
+              - /usr/share/%{name}/cmd/bump-spec/*.py
+              - /usr/share/%{name}/cmd/wizard/*.py
       - runtime:
             dependencies:
               - name: '%{name} = %{version}-%{release}'
@@ -111,7 +111,7 @@ unit_list:
       - description: Gofedlib
       - files:
             list:
-              - '%license LICENSE '
+              - '%license LICENSE'
               - '%{python2_sitelib}/gofedlib'
               - '%{python2_sitelib}/gofedlib-?.?.???-py2.7.egg-info'
               - '%{_bindir}/gofedlib-cli'
@@ -128,7 +128,7 @@ unit_list:
       - description: Gofed resources
       - files:
             list:
-              - '%license LICENSE '
+              - '%license LICENSE'
               - '%{python2_sitelib}/gofedresources'
               - '%{python2_sitelib}/gofedresources-?.?.?-py2.7.egg-info'
       - buildtime:
@@ -144,7 +144,7 @@ unit_list:
       - description: Gofed infra
       - files:
             list:
-              - '%license LICENSE '
+              - '%license LICENSE'
               - '%{python2_sitelib}/gofedinfra'
               - '%{python2_sitelib}/gofedinfra-?.?.?-py2.7.egg-info'
       - buildtime:
@@ -163,12 +163,8 @@ unit_list:
       - name: docker
       - description: Run gofed commands as a container
       - files:
-            meta:
-                file: python-cmdsignature
             list:
-              - '%license LICENSE '
-              - '%{python2_sitelib}/cmdsignature'
-              - '%{python2_sitelib}/cmdsignature-?.?.?-py2.7.egg-info'
+              - '%{_bindir}/gofed-docker'
       - runtime:
             dependencies:
               - name: '%{name}-cmd-dnfs-base = %{version}-%{release}'
@@ -179,8 +175,12 @@ unit_list:
       - name: python-cmdsignature
       - description: Command signature python module
       - files:
+            meta:
+                file: python-cmdsignature
             list:
-              - '%{_bindir}/gofed-docker'
+              - '%license LICENSE'
+              - '%{python2_sitelib}/cmdsignature'
+              - '%{python2_sitelib}/cmdsignature-?.?.?-py2.7.egg-info'
       - buildtime:
             dependencies:
               - name: PyYAML
