@@ -97,6 +97,17 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
                 json_to_specfile_class(single_block['else_body'], predicate_list + [[single_block['expression'], 0]])
             Specfile.block_list = Specfile.block_list[:count]
 
+        # MacroCondition
+        elif single_block['block_type'] == BlockTypes.MacroConditionType:
+            Specfile.block_list.append(remove_blocktype(single_block))
+            count = len(Specfile.block_list)
+            if 'content' in single_block and single_block['content'] != []:
+                if 'condition' in single_block and '!' in single_block['condition']:
+                    json_to_specfile_class(single_block['content'], predicate_list + [[single_block['name'], 0]])
+                else:
+                    json_to_specfile_class(single_block['content'], predicate_list + [[single_block['name'], 1]])
+            Specfile.block_list = Specfile.block_list[:count]
+
         else:
             Specfile.block_list.append(remove_blocktype(single_block))
 
@@ -114,7 +125,7 @@ def create_abstract_model(input_filepath):
         Specfile.metastring += json_containing_parsed_spec['metastring']
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
         Specfile.metastring += json_containing_parsed_spec['end']
-
+        
 
 
 def print_indentation(indentation):
@@ -181,7 +192,8 @@ def pretty_print_block(intern_field, block_type, indentation):
         print('{' + intern_field['condition'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
             print(" " + intern_field['name'] + ":", end='')
-        print(intern_field['content'] + '}\n', end='')
+        print_pretty_field(intern_field['content'], 0)            
+        print('}\n', end='')
 
     elif block_type == BlockTypes.MacroUndefinitionType:
         print('%' + intern_field['keyword'], end='')
@@ -305,12 +317,16 @@ def print_field(block_list):
                 for metastring in metastring_block_list[1:]:
                     if int(metastring[0]) == 0:
                         print('%{', end='')
-                    elif int(metastring[0]) == 2:
+                    elif int(metastring[0]) == 1:
+                        print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
                         print(':', end='')
+                        if 'content' in intern_field and intern_field['content'] != []:
+                            print_field(intern_field['content'])
                     elif int(metastring[0]) == 3:
                         print('}', end='')
 
-                    print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
+                    if int(metastring[0]) != 1:
+                        print(intern_field[keys_list[intern_field['block_type']][int(metastring[0])]], end='')
                     print(metastring[1:], end='')
 
             elif intern_field['block_type'] == BlockTypes.MacroUndefinitionType:
