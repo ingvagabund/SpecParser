@@ -56,7 +56,14 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
         Specfile2.metastring += '#' + str(block['block_type']) + str(sequence_number)
         list_of_blocks[block['block_type']].append(block)
 
-        if 'content' in block and block['block_type'] in [6]:
+        if 'content' in block and block['block_type'] in [3]:
+            Specfile2.metastring += metastring1[:metastring1.find('%3')]
+            metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%3'):]
+            
+            transform_spec1_to_spec2(block['content'], None)
+            del block['content']
+
+        elif 'content' in block and block['block_type'] in [6]:
             if not 'else_body' in block or block['else_body'] == []:
                 number_of_next_item = 5
             else:
@@ -149,10 +156,11 @@ def get_files_block_pos(block_list, wanted_block):
 
 def process_blocks():
 
+    global metastring_list
     block_list = []
     metastring1 = ""
 
-    for metastring2 in metastring_list:
+    for idx, metastring2 in enumerate(metastring_list):
         processed_already = False
 
         if int(metastring2[0]) == 6 and int(metastring2[metastring2.find('%') + 1]) != 0:
@@ -164,6 +172,13 @@ def process_blocks():
             else:
                 pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
                 metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
+        elif int(metastring2[0]) == 3 and int(metastring2[metastring2.find('%') + 1]) != 0:
+            pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
+            metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
+
+            pos = get_outer_block_pos(block_list, list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])])
+            list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content'] = [block_list[pos+1]]
+            block_list = block_list[:pos] + block_list[pos + 2:]
         else:
             metastring1 += '#' + metastring2
 
@@ -186,6 +201,7 @@ def process_blocks():
             file_records = re.findall(r'%4[^%]*', metastring2)
             first_record = True
             original_files_line_id = 0
+            files_line_id = 0
             processed_already = False
             subtract = 0
 
