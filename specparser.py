@@ -178,11 +178,14 @@ class SpecfileParser(runtime.Parser):
         MACRO_NAME = self._scan('MACRO_NAME', context=_context)
         COLON = self._scan('COLON', context=_context)
         MACRO_CONDITION_BODY = self._scan('MACRO_CONDITION_BODY', context=_context)
+        count = len(Specfile.block_list)
         block = Block(BlockTypes.MacroConditionType)
         block.name = MACRO_NAME
         if 'EXCLAMATION_MARK' in locals(): block.condition = EXCLAMATION_MARK + QUESTION_MARK
         else: block.condition = QUESTION_MARK
-        block.content = MACRO_CONDITION_BODY
+        parse('spec_file', MACRO_CONDITION_BODY)
+        block.content = Specfile.block_list[count:]
+        Specfile.block_list = Specfile.block_list[:count]
         return block
 
     def commentary(self, _parent=None):

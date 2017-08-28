@@ -120,13 +120,15 @@ parser SpecfileParser:
 
 
     rule macro_condition:   EXCLAMATION_MARK? QUESTION_MARK MACRO_NAME COLON MACRO_CONDITION_BODY
+                                                                        {{ count = len(Specfile.block_list) }}
                                                                         {{ block = Block(BlockTypes.MacroConditionType) }}
                                                                         {{ block.name = MACRO_NAME }}
                                                                         {{ if 'EXCLAMATION_MARK' in locals(): block.condition = EXCLAMATION_MARK + QUESTION_MARK }}
                                                                         {{ else: block.condition = QUESTION_MARK }}
-                                                                        {{ block.content = MACRO_CONDITION_BODY }}
+                                                                        {{ parse('spec_file', MACRO_CONDITION_BODY) }}
+                                                                        {{ block.content = Specfile.block_list[count:] }}
+                                                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
                                                                         {{ return block }}
-
 
 
     rule commentary:  COMMENT                                           {{ block = Block(BlockTypes.CommentType) }}
