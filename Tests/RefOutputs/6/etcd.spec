@@ -379,15 +379,15 @@ metastring: "#60%0 %1\n#012%0 %1 %3\n#013%0 %1 %3\n#014%0 %1 %3\n#40%0\n#41%0\n#
     %4\n#11%4#64%5\n\n#66%0 %1\n#13%0 %3\n#193%0         %2\n#45%0\n#194%0  %2\n\n\
     #67%0 %1\n#46%0\n#47%0\n#67%5\n\n#48%0\n#195%0        %2\n\n#14%0 %1\n%4\n#13%4#66%5\n\
     \n#184%0\n%4\n\n#185%0\n%4\n\n#186%0\n%4\n\n#187%0\n%4\n\n#188%0\n%4\n\n#189%0\n\
-    %4\n\n#190%0\n%4\n\n#191%0\n%4\n#30%0%1%2%3\n\n#192%0\n%40\n%41\n%42\n%43\n%44\n\
-    %45\n%46\n\n#68%0 %1\n#114%0 %1 %2 %3\n%40\n%41\n%42\n%43\n#68%5\n\n#69%0 %1\n\
-    #115%0 %1 %2 %3\n%40\n%41\n#69%5\n\n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n\
+    %4\n\n#190%0\n%4\n\n#191%0\n%4\n#30%0%1#0141%0 %1 %3#30%3\n\n#192%0\n%40\n%41\n\
+    %42\n%43\n%44\n%45\n%46\n\n#68%0 %1\n#114%0 %1 %2 %3\n%40\n%41\n%42\n%43\n#68%5\n\
+    \n#69%0 %1\n#115%0 %1 %2 %3\n%40\n%41\n#69%5\n\n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n\
     %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n\
     %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n\
     %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n\
     %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n\
     %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n\
-    %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n"
+    %4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n"
 main_unit:
   - description: A highly-available key value store for shared configuration.
   - prep: "%setup -q -n %{name}-%{commit}\n# move content of vendor under Godeps as\
@@ -1048,4 +1048,7 @@ metadata:
   - '%import_path': '%{provider_prefix}'
   - '%commit': e5b7ee2d03627ca33201da428b8110ef7c3e95f1
   - '%shortcommit': '%(c=%{commit}; echo ${c:0:7})'
+  - '%license': '%doc'
+    condition:
+      - NOT _licensedir
 
