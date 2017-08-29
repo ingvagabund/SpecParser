@@ -9,7 +9,7 @@ from tests import run_tests
 from model_methods import create_abstract_model, Specfile, class_to_specfile
 from model_methods import process_config_file, print_json_representation, remove_empty_fields
 from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specfile2
-from go_spec import create_go_spec_model, GoSpecfile, reduce_gospecfile
+from go_spec import create_go_spec_model, GoSpecfile, reduce_gospecfile, transform_gospec_to_spec2
 
 
 
@@ -39,7 +39,7 @@ def parse_arguments():
     arg_parser.add_argument('-p', '--pretty-print', dest="pretty", type=int, choices=[0, 1], default=0,
                             help="output specfile in a normalized form")
 
-    arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1, 2], default=2,
+    arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1, 2, 3], default=2,
                             help="choose between specfile 1.0 and 2.0 abstract models")
 
     arg_parser.add_argument('--debug', dest="debug", type=int, choices=[0, 1], default=0,
@@ -89,13 +89,13 @@ def process_args(args):
 
     # args.json is set => read and process input specfile, write output in json
     if args.json:
-        if args.model and args.model == 1:
+        if args.model and args.model == 1 and not args.go_spec:
             print_json_representation(Specfile, args.reduced)
-        else:
+        elif not args.go_spec:
             print_json_representation(Specfile2, args.reduced)
 
     # args.debug is set => read and process input specfile, transform into 2.0 and then back to 1.0
-    if args.debug:
+    if args.debug and args.model == 2:
         Specfile1 = transform_spec2_to_spec1(Specfile2)
         print(json.dumps(remove_empty_fields(Specfile1), default=lambda o: o.__dict__, sort_keys=True))
 
@@ -104,10 +104,17 @@ def process_args(args):
 
         # print(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
         # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True))))
-        print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
-            json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True)),
-                                          default_flow_style=False, indent=4,
-                                          block_seq_indent=2, width=80))
+        
+        if args.json:
+            print(ruamel.yaml.round_trip_dump(ruamel.yaml.safe_load(
+                json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True)),
+                                              default_flow_style=False, indent=4,
+                                              block_seq_indent=2, width=80))
+
+    # args.debug is set => read and process input specfile, transform into 2.0 and then back to 1.0
+    if args.debug and args.model == 3:
+        Specfile2_from_gospec = transform_gospec_to_spec2(GoSpecfile)
+        print(json.dumps(remove_empty_fields(Specfile2_from_gospec), default=lambda o: o.__dict__, sort_keys=True))
 
 
 def main():
