@@ -1,271 +1,271 @@
 unit_list:
   -   - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Summary: etcd golang devel libraries
       - BuildArch: noarch
         condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/alarm) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/auth) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/auth/authpb) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/client) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/client/integration) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/clientv3) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/clientv3/concurrency) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/clientv3/integration) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/clientv3/mirror) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/clientv3/naming) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/compactor) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/contrib/recipes) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/discovery) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/e2e) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/embed) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/error) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdctl/ctlv2) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdctl/ctlv2/command) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdctl/ctlv3) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdctl/ctlv3/command) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdmain) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/api) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/api/v2http) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/api/v2http/httptypes) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/api/v3rpc) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/api/v3rpc/rpctypes) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/auth) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/etcdserverpb) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/membership) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/etcdserver/stats) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/integration) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/lease) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/lease/leasehttp) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/lease/leasepb) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/mvcc) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/mvcc/backend) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/mvcc/mvccpb) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/adt) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/contention) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/cors) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/cpuutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/crc) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/expect) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/fileutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/flags) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/httputil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/idutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/ioutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/logutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/mock/mockstorage) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/mock/mockstore) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/mock/mockwait) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/monotime) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/netutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/osutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/pathutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/pbutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/report) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/runtime) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/schedule) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/stringutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/testutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/tlsutil) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/transport) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/types) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/pkg/wait) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/proxy/grpcproxy) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/proxy/grpcproxy/cache) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/proxy/httpproxy) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/proxy/tcpproxy) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/raft) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/raft/raftpb) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/raft/rafttest) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/rafthttp) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/snap) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/snap/snappb) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/store) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/tools/benchmark/cmd) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/tools/functional-tester/etcd-agent/client)
             = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/tools/functional-tester/etcd-runner/command)
             = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/version) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/wal) = %{version}-%{release}
       - condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
         Provides: golang(%{import_path}/wal/walpb) = %{version}-%{release}
       - name: devel
         condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
       - description: "golang development libraries for etcd, a highly-available key\
             \ value store for\nshared configuration."
         condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
       - runtime:
             dependencies:
               - name: golang(github.com/bgentry/speakeasy)
@@ -305,15 +305,15 @@ unit_list:
               - name: golang(google.golang.org/grpc/metadata)
               - name: golang(google.golang.org/grpc/naming)
   -   - condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
         Summary: Unit tests for %{name} package
       - name: unit-test
         condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
       - description: "%{summary}\n\nThis package contains unit tests for project\n\
             providing packages with %{import_path} prefix."
         condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
       - buildtime:
             dependencies:
               - name: '%{?go_compiler:compiler(go-compiler)}%{!?go_compiler:golang}'
@@ -329,7 +329,7 @@ unit_list:
               - '%doc glide.lock'
               - '%dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}'
         condition:
-          - 0%{?with_devel}
+          - if 0%{?with_devel}
   -   - files:
             meta:
                 file: unit-test.file-list
@@ -337,7 +337,7 @@ unit_list:
               - '%license LICENSE'
               - '%doc *.md'
         condition:
-          - 0%{?with_unit_test}
+          - if 0%{?with_unit_test}
 metastring: "#60%0 %1\n#012%0 %1 %3\n#013%0 %1 %3\n#014%0 %1 %3\n#40%0\n#41%0\n#015%0\
     \ %1 %3\n#016%0 %1 %3\n#60%3\n#017%0 %1 %3\n#018%0 %1 %3\n#019%0 %1 %3\n#020%0\
     \ %1 %3\n#021%0 %1 %3\n#60%5\n\n#61%0 %1\n#0130%0 %1 %3\n#61%3\n#0131%0 %1   %3\n\
@@ -354,8 +354,8 @@ metastring: "#60%0 %1\n#012%0 %1 %3\n#013%0 %1 %3\n#014%0 %1 %3\n#40%0\n#41%0\n#
     \ %2\n#128[40]%0 %2\n#129[41]%0 %2\n#130[42]%0 %2\n#131[43]%0 %2\n#132[44]%0 %2\n\
     #133[45]%0 %2\n#134[46]%0 %2\n#135[47]%0 %2\n#136[48]%0 %2\n#137[49]%0 %2\n#63%5\n\
     \n#138[50]%0\t%2\n\n#139[51]%0%1\t%2\n#140[52]%0%1 %2\n#141[53]%0%1 %2\n#142[54]%0%1\
-    \ %2\n\n#179%0\n%4\n\n#64%0 %1\n#11%0 %3\n#055%0        %2\n#056%0      %2\n\n\
-    #65%0 %1\n#143[57]%0 %2\n#144[58]%0 %2\n#145[59]%0 %2\n#146[60]%0 %2\n#147[61]%0\
+    \ %2\n\n#179%0\n%4\n\n#64%0 %1\n#2125[1]%0 %3\n#055%0        %2\n#056%0      %2\n\
+    \n#65%0 %1\n#143[57]%0 %2\n#144[58]%0 %2\n#145[59]%0 %2\n#146[60]%0 %2\n#147[61]%0\
     \ %2\n#148[62]%0 %2\n#149[63]%0 %2\n#150[64]%0 %2\n#151[65]%0 %2\n#152[66]%0 %2\n\
     #153[67]%0 %2\n#154[68]%0 %2\n#155[69]%0 %2\n#156[70]%0 %2\n#157[71]%0 %2\n#158[72]%0\
     \ %2\n#159[73]%0 %2\n#160[74]%0 %2\n#161[75]%0 %2\n#162[76]%0 %2\n#163[77]%0 %2\n\
@@ -383,19 +383,19 @@ metastring: "#60%0 %1\n#012%0 %1 %3\n#013%0 %1 %3\n#014%0 %1 %3\n#40%0\n#41%0\n#
     #17[19]7%0 %2\n#17[19]8%0 %2\n#17[19]9%0 %2\n#18[20]0%0 %2\n#18[20]1%0 %2\n#18[20]2%0\
     \ %2\n#18[20]3%0 %2\n#18[20]4%0 %2\n#18[20]5%0 %2\n#18[20]6%0 %2\n#18[20]7%0 %2\n\
     #18[20]8%0 %2\n#18[20]9%0 %2\n#19[21]0%0 %2\n#19[21]1%0 %2\n#19[21]2%0 %2\n\n\
-    #12%0 %1\n%4\n#11%4#64%5\n\n#66%0 %1\n#13%0 %3\n#19[21]3%0         %2\n#45%0\n\
-    #19[21]4%0  %2\n\n#67%0 %1\n#46%0\n#47%0\n#67%5\n\n#48%0\n#19[21]5%0        %2\n\
-    \n#14%0 %1\n%4\n#13%4#66%5\n\n#184%0\n%4\n\n#185%0\n%4\n\n#186%0\n%4\n\n#187%0\n\
-    %4\n\n#188%0\n%4\n\n#189%0\n%4\n\n#190%0\n%4\n\n#191%0\n%4\n#30%0%1#0141%0 %1\
-    \ %3#30%3\n\n#192%0\n%40\n%41\n%42\n%43\n%44\n%45\n%46\n\n#68%0 %1\n#114%0 %1\
-    \ %2 %3\n%40\n%41\n%42\n%43\n#68%5\n\n#69%0 %1\n#115%0 %1 %2 %3\n%40\n%41\n#69%5\n\
-    \n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
+    #2126[2]%0 %1\n%4\n#2125[1]%4#64%5\n\n#66%0 %1\n#2127[3]%0 %3\n#19[21]3%0    \
+    \     %2\n#45%0\n#19[21]4%0  %2\n\n#67%0 %1\n#46%0\n#47%0\n#67%5\n\n#48%0\n#19[21]5%0\
+    \        %2\n\n#2128[4]%0 %1\n%4\n#2127[3]%4#66%5\n\n#184%0\n%4\n\n#185%0\n%4\n\
+    \n#186%0\n%4\n\n#187%0\n%4\n\n#188%0\n%4\n\n#189%0\n%4\n\n#190%0\n%4\n\n#191%0\n\
+    %4\n#30%0%1#0141%0 %1 %3#30%3\n\n#192%0\n%40\n%41\n%42\n%43\n%44\n%45\n%46\n\n\
+    #68%0 %1\n#2129[14]%0 %1 %2 %3\n%40\n%41\n%42\n%43\n#68%5\n\n#69%0 %1\n#2130[15]%0\
+    \ %1 %2 %3\n%40\n%41\n#69%5\n\n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
-    \n%4\n\n%4\n\n%4\n\n"
+    \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n"
 main_unit:
   - description: A highly-available key value store for shared configuration.
   - prep: "%setup -q -n %{name}-%{commit}\n# move content of vendor under Godeps as\
@@ -973,28 +973,28 @@ history:
 comments:
   -   - '# Some tests fails and it takes a lot of time to investigate'
       - condition:
-          - 0%{?fedora}
+          - if 0%{?fedora}
   -   - '# what is wrong'
       - condition:
-          - 0%{?fedora}
+          - if 0%{?fedora}
   - '# https://github.com/coreos/etcd'
   - '# e.g. el6 has ppc64 arch without gcc-go, so EA tag is required'
   - '# If go_compiler is not set to 1, there is no virtual provide. Use golang instead.'
   -   - '# If go_compiler is not set to 1, there is no virtual provide. Use golang
         instead.'
       - condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
   -   - '#Here comes all BuildRequires: PACKAGE the unit tests'
       - condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
-          - 0%{?with_check}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_check}
   -   - '#in %%check section need for running'
       - condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
-          - 0%{?with_check}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_check}
   -   - '# test subpackage tests code from devel subpackage'
       - condition:
-          - 0%{?with_unit_test} && 0%{?with_devel}
+          - if 0%{?with_unit_test} && 0%{?with_devel}
 metadata:
   - Name: '%{repo}'
   - Version: 3.1.6
@@ -1010,44 +1010,44 @@ metadata:
   - ExclusiveArch: '%{ix86} x86_64 %{arm} aarch64 ppc64le s390x'
   - '%with_devel': '1'
     condition:
-      - 0%{?fedora}
+      - if 0%{?fedora}
   - '%with_bundled': '0'
     condition:
-      - 0%{?fedora}
+      - if 0%{?fedora}
   - condition:
-      - 0%{?fedora}
+      - if 0%{?fedora}
     '%with_debug': '1'
   - '%with_check': '0'
     condition:
-      - 0%{?fedora}
+      - if 0%{?fedora}
   - '%with_unit_test': '1'
     condition:
-      - 0%{?fedora}
+      - if 0%{?fedora}
   - '%with_devel': '0'
     condition:
-      - NOT 0%{?fedora}
+      - if NOT 0%{?fedora}
   - '%with_bundled': '1'
     condition:
-      - NOT 0%{?fedora}
+      - if NOT 0%{?fedora}
   - condition:
-      - NOT 0%{?fedora}
+      - if NOT 0%{?fedora}
     '%with_debug': '0'
   - '%with_check': '0'
     condition:
-      - NOT 0%{?fedora}
+      - if NOT 0%{?fedora}
   - '%with_unit_test': '0'
     condition:
-      - NOT 0%{?fedora}
+      - if NOT 0%{?fedora}
   - '%_dwz_low_mem_die_limit': '0'
     condition:
-      - 0%{?with_debug}
+      - if 0%{?with_debug}
   - '%debug_package': '%{nil}'
     condition:
-      - NOT 0%{?with_debug}
+      - if NOT 0%{?with_debug}
   - '%gobuild': go build -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An
         -tx1|tr -d ' \\n')" -a -v -x %{?**};
     condition:
-      - '! 0%{?gobuild:1}'
+      - if ! 0%{?gobuild:1}
   - '%provider': github
   - '%provider_tld': com
   - '%project': coreos

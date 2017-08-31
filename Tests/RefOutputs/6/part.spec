@@ -5,48 +5,48 @@ metastring: "#60%0 %1\n  #00%0 %1 %3\n  #61%0 %1\n    #01%0 %1%2 %3\n  #61%3\n  
 comments:
   -   - '# third else comment'
       - condition:
-          - '! 0%{?first_if:1}'
-          - NOT second_if
-          - NOT third_if
+          - if ! 0%{?first_if:1}
+          - if NOT second_if
+          - if NOT third_if
   -   - '# inter comment'
       - condition:
-          - '! 0%{?first_if:1}'
-          - NOT second_if
+          - if ! 0%{?first_if:1}
+          - if NOT second_if
   -   - '# fourth if comment'
       - condition:
-          - '! 0%{?first_if:1}'
-          - NOT second_if
-          - fourth_if
+          - if ! 0%{?first_if:1}
+          - if NOT second_if
+          - if fourth_if
   -   - '# fifth if comment'
       - condition:
-          - '! 0%{?first_if:1}'
-          - NOT second_if
-          - fourth_if
-          - fifth_if
+          - if ! 0%{?first_if:1}
+          - if NOT second_if
+          - if fourth_if
+          - if fifth_if
   -   - '# fourth else comment'
       - condition:
-          - '! 0%{?first_if:1}'
-          - NOT second_if
-          - NOT fourth_if
+          - if ! 0%{?first_if:1}
+          - if NOT second_if
+          - if NOT fourth_if
 metadata:
   - '%first_define': first_body
     condition:
-      - '! 0%{?first_if:1}'
+      - if ! 0%{?first_if:1}
   - condition:
-      - '! 0%{?first_if:1}'
-      - second_if
+      - if ! 0%{?first_if:1}
+      - if second_if
     '%second_define': second_body
   - condition:
-      - '! 0%{?first_if:1}'
-      - NOT second_if
+      - if ! 0%{?first_if:1}
+      - if NOT second_if
     '%second_else': scond_else_body
   - '%third_if': third_body
     condition:
-      - '! 0%{?first_if:1}'
-      - NOT second_if
-      - third_if
+      - if ! 0%{?first_if:1}
+      - if NOT second_if
+      - if third_if
   - '%secondelse': go build -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od
         -An -tx1|tr -d ' \\n')" -a -v -x %{?**};
     condition:
-      - NOT ! 0%{?first_if:1}
+      - if NOT ! 0%{?first_if:1}
 
