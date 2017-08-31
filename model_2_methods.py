@@ -75,11 +75,12 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
             transform_spec1_to_spec2(block['content'], None)
             del block['content']
 
-        if 'else_body' in block and block['else_body'] != []:
-            Specfile2.metastring += metastring1[:metastring1.find('%5')]
-            metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%5'):]
+        if 'else_body' in block:
+            if block['else_body'] != []:
+                Specfile2.metastring += metastring1[:metastring1.find('%5')]
+                metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%5'):]
 
-            transform_spec1_to_spec2(block['else_body'], None)
+                transform_spec1_to_spec2(block['else_body'], None)
             del block['else_body']
 
         if 'keyword' in block and block['keyword'] == 'package':
