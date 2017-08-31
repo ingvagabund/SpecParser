@@ -92,9 +92,9 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
             Specfile.block_list.append(remove_blocktype(single_block))
             count = len(Specfile.block_list)
             if 'content' in single_block and single_block['content'] != []:
-                json_to_specfile_class(single_block['content'], predicate_list + [[single_block['expression'], 1]])
+                json_to_specfile_class(single_block['content'], predicate_list + [[single_block['expression'], 1, single_block['keyword']]])
             if 'else_body' in single_block and single_block['else_body'] != []:
-                json_to_specfile_class(single_block['else_body'], predicate_list + [[single_block['expression'], 0]])
+                json_to_specfile_class(single_block['else_body'], predicate_list + [[single_block['expression'], 0, single_block['keyword']]])
             Specfile.block_list = Specfile.block_list[:count]
 
         # MacroCondition
@@ -103,9 +103,9 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
             count = len(Specfile.block_list)
             if 'content' in single_block and single_block['content'] != []:
                 if 'condition' in single_block and '!' in single_block['condition']:
-                    json_to_specfile_class(single_block['content'], predicate_list + [[single_block['name'], 0]])
+                    json_to_specfile_class(single_block['content'], predicate_list + [[single_block['name'], 0, None]])
                 else:
-                    json_to_specfile_class(single_block['content'], predicate_list + [[single_block['name'], 1]])
+                    json_to_specfile_class(single_block['content'], predicate_list + [[single_block['name'], 1, None]])
             Specfile.block_list = Specfile.block_list[:count]
 
         else:
