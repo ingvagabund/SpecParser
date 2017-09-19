@@ -6,6 +6,7 @@ import ruamel.yaml
 
 # from specparser import parse_specfile
 from tests import run_tests
+from examples import run_examples
 from model_methods import create_abstract_model, Specfile, class_to_specfile
 from model_methods import process_config_file, print_json_representation, remove_empty_fields
 from model_2_methods import create_spec_2_model, transform_spec2_to_spec1, Specfile2
@@ -48,6 +49,9 @@ def parse_arguments():
     arg_parser.add_argument('-g', '--go_spec', dest="go_spec", type=int, choices=[0, 1], default=0,
                             help="for testing and debugging purposes only, transforms specfile into go specfile")
 
+    arg_parser.add_argument('-e', '--examples', dest="examples", type=int, choices=[0, 1], default=0,
+                            help="runs all available examples")
+
     return arg_parser.parse_args()
 
 
@@ -57,6 +61,11 @@ def process_args(args):
     # args.test == 1 => run all available tests
     if args.test:
         run_tests()
+        sys.exit(0)
+
+    # args.examples == 1 => run all available examples
+    if args.examples:
+        run_examples()
         sys.exit(0)
 
     # args.input is set => read and process input specfile or json file
@@ -115,6 +124,7 @@ def process_args(args):
     if args.debug and args.model == 3:
         Specfile2_from_gospec = transform_gospec_to_spec2(GoSpecfile)
         print(json.dumps(remove_empty_fields(Specfile2_from_gospec), default=lambda o: o.__dict__, sort_keys=True))
+
 
 
 def main():
