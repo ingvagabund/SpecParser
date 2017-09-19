@@ -11,5 +11,8 @@ endif
 test:
 	python specparser_main.py -t 1
 
+examples:
+	python specparser_main.py -e 1
+
 clean:
-	rm -rf *.pyc ./Tests/Outputs/*
+	rm -rf *.pyc ./Tests/Outputs ./Examples/Outputs
