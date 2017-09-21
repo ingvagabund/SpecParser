@@ -1,4 +1,3 @@
-#define license tag if not already defined
 %{!?_licensedir:%global license %doc}
 
 %if ! 0%{?gobuild:1}
