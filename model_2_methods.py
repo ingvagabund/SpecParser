@@ -102,7 +102,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
                     to_be_removed.append(idx)
                 elif single_file[0] == '#':
                     metastring += '#5' + str(len(list_of_blocks[5]))
-                    list_of_blocks[5].append({"block_type": 5, "content": block['content'][idx], "files": block['name'], "position": idx})
+                    list_of_blocks[5].append({'block_type': 5, 'content': block['content'][idx], 'files': block['name'], 'position': idx})
                     metastring += create_metastring(list_of_blocks[5][-1], list_of_blocks[5][-1]['block_type'])
                     to_be_removed.append(idx)
                     first = True
@@ -121,7 +121,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
 
             metastring1 = metastring1.replace('%4', metastring)
 
-        # if 'end_keyword' in block and block['end_keyword'] != "":
+        # if 'end_keyword' in block and block['end_keyword'] != '':
         #     Specfile1_metastring_list = Specfile1_metastring_list[1:]
 
         Specfile2.metastring += block_metastring_list[0] + metastring1
@@ -159,7 +159,7 @@ def process_blocks():
 
     global metastring_list
     block_list = []
-    metastring1 = ""
+    metastring1 = ''
 
     for idx, metastring2 in enumerate(metastring_list):
         processed_already = False
@@ -169,7 +169,7 @@ def process_blocks():
             metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]
         elif int(metastring2[0]) == 1 and list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['keyword'] == 'package':
             if int(metastring2[metastring2.find('%') + 1]) == 0:
-                metastring1 += "#" + metastring2
+                metastring1 += '#' + metastring2
             else:
                 pos_of_next_field = metastring1.find('#', metastring1.find('#' + metastring2[:metastring2.find('%')]) + 1)
                 metastring1 = metastring1[:pos_of_next_field] + metastring2[metastring2.find('%'):] + metastring1[pos_of_next_field:]

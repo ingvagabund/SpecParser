@@ -19,37 +19,37 @@ def parse_arguments():
 
     arg_parser = argparse.ArgumentParser() #description="TODO")
 
-    arg_parser.add_argument('-i', '--input', dest="input", type=str,
+    arg_parser.add_argument('-i', '--input', dest='input', type=str,
                             help="path to input specfile")
 
-    arg_parser.add_argument('-t', '--test', dest="test", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('-t', '--test', dest='test', type=int, choices=[0, 1], default=0,
                             help="turns on/off (1/0) tests run")
 
-    arg_parser.add_argument('-j', '--json', dest="json", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('-j', '--json', dest='json', type=int, choices=[0, 1], default=0,
                             help="turns on/off (1/0) output in json")
 
-    arg_parser.add_argument('-s', '--specfile', dest="specfile", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('-s', '--specfile', dest='specfile', type=int, choices=[0, 1], default=0,
                             help="turns on/off (1/0) output as a specfile")
 
-    arg_parser.add_argument('-r', '--reduced', dest="reduced", type=int, choices=[0, 1], default=1,
+    arg_parser.add_argument('-r', '--reduced', dest='reduced', type=int, choices=[0, 1], default=1,
                             help="turns on/off (1/0) reduced output in json, outputs only non-empty fields")
 
-    arg_parser.add_argument('-c', '--config', dest="config", type=str,
+    arg_parser.add_argument('-c', '--config', dest='config', type=str,
                             help="path to configuration file")
 
-    arg_parser.add_argument('-p', '--pretty-print', dest="pretty", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('-p', '--pretty-print', dest='pretty', type=int, choices=[0, 1], default=0,
                             help="output specfile in a normalized form")
 
-    arg_parser.add_argument('-m', '--model', dest="model", type=int, choices=[1, 2, 3], default=2,
+    arg_parser.add_argument('-m', '--model', dest='model', type=int, choices=[1, 2, 3], default=2,
                             help="choose between specfile 1.0 and 2.0 abstract models")
 
-    arg_parser.add_argument('--debug', dest="debug", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('--debug', dest='debug', type=int, choices=[0, 1], default=0,
                             help="for testing and debugging purposes")
 
-    arg_parser.add_argument('-g', '--go_spec', dest="go_spec", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('-g', '--go_spec', dest='go_spec', type=int, choices=[0, 1], default=0,
                             help="for testing and debugging purposes only, transforms specfile into go specfile")
 
-    arg_parser.add_argument('-e', '--examples', dest="examples", type=int, choices=[0, 1], default=0,
+    arg_parser.add_argument('-e', '--examples', dest='examples', type=int, choices=[0, 1], default=0,
                             help="runs all available examples")
 
     return arg_parser.parse_args()

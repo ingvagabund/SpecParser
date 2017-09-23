@@ -53,8 +53,8 @@ def reduce_gospecfile():
                                     if single_record[keyword][inner_keyword] is not None:
                                         if 'block_type' in single_record[keyword][inner_keyword]:
                                             reduced_block_list[1][index][keyword][inner_keyword] = gospecfile_to_print(block_list[1][index][keyword][inner_keyword])
-                            else:
-                                print("NOT DICT: " + str(keyword) + " : "  + str(single_record[keyword]))
+                            # else:
+                                # print("NOT DICT: " + str(keyword) + " : "  + str(single_record[keyword]))
 
                     else:
                         if single_record['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)requires', single_record['key']) is not None:
@@ -270,16 +270,16 @@ def create_go_spec_model(Specfile2):
             if 'package' not in header_tag or header_tag['package'] == '':
                 if re.match(r'(?i)requires', header_tag['key']) is not None:
                     GoSpecfile.main_unit.append(header_tag)
-                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ["0" + str(index), 1])
+                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ['0' + str(index), 1])
                     prev_section_count += 1
 
                 elif re.match(r'(?i)buildrequires', header_tag['key']) is not None:
-                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ["0" + str(index), 1])
+                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ['0' + str(index), 1])
                     prev_section_count += 1
                     GoSpecfile.main_unit.append(header_tag)
 
                 elif re.match(r'(?i)excludearch', header_tag['key']) is not None:
-                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ["0" + str(index), 1])
+                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ['0' + str(index), 1])
                 #     GoSpecfile.main_unit.append(header_tag)
                     ExcludeArch.append([prev_section_count, header_tag])
                     prev_section_count += 1
@@ -292,22 +292,22 @@ def create_go_spec_model(Specfile2):
     if Specfile2.MacroDefinitions:
         for index, macro_definition in enumerate(list_of_blocks[2]):
             GoSpecfile.metadata.append(macro_definition)
-            replace_field_number(len(GoSpecfile.metadata) - 1, ["2" + str(index), 0])
+            replace_field_number(len(GoSpecfile.metadata) - 1, ['2' + str(index), 0])
 
     if Specfile2.SectionTags:
         # to_be_removed = []
         for index, single_section in enumerate(Specfile2.SectionTags):
             if single_section['keyword'] == 'changelog':
                 GoSpecfile.history = single_section
-                replace_field_number(0, ["1" + str(index), 3])
+                replace_field_number(0, ['1' + str(index), 3])
 
             elif single_section['keyword'] == 'package':
                 GoSpecfile.unit_list.append(single_section)
 
-                to_be_replaced_list = re.findall(r'#' + str("1" + str(index)) + '%', GoSpecfile.metastring)
+                to_be_replaced_list = re.findall(r'#' + str('1' + str(index)) + '%', GoSpecfile.metastring)
                 for replace_record in to_be_replaced_list:
                     GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('2' + str(len(GoSpecfile.unit_list) - 1) + '[' + str(index) + ']') + '%')
-                # replace_field_number('', ["1" + str(index), '2' + str(len(GoSpecfile.unit_list) - 1) + '[' + str(index) + ']'])                
+                # replace_field_number('', ['1' + str(index), '2' + str(len(GoSpecfile.unit_list) - 1) + '[' + str(index) + ']'])                
 
                 # crop the part of metastring describing fields inside package section
                 # [3:-4] - remove identification of the package section
@@ -334,20 +334,20 @@ def create_go_spec_model(Specfile2):
             and 'parameters' in single_section and 'n' in single_section['parameters']): # TODO subname?
                 GoSpecfile.unit_list.append(single_section)
 
-                to_be_replaced_list = re.findall(r'#' + str("1" + str(index)) + '%', GoSpecfile.metastring)
+                to_be_replaced_list = re.findall(r'#' + str('1' + str(index)) + '%', GoSpecfile.metastring)
                 for replace_record in to_be_replaced_list:
                     GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('2' + str(len(GoSpecfile.unit_list) - 1) + '[' + str(index) + ']') + '%')
 
             elif 'subname' in single_section and single_section['subname'] is not None:
                 GoSpecfile.main_unit.append(single_section)
 
-                to_be_replaced_list = re.findall(r'#' + str("1" + str(index)) + '%', GoSpecfile.metastring)
+                to_be_replaced_list = re.findall(r'#' + str('1' + str(index)) + '%', GoSpecfile.metastring)
                 for replace_record in to_be_replaced_list:
                     GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('1' + str(len(GoSpecfile.main_unit)) + '[' + str(index) + ']') + '%')
 
             elif 'AP' not in single_section or single_section['AP'] == '':
                 GoSpecfile.main_unit.append(single_section)
-                replace_field_number(prev_section_count, ["1" + str(index), 1])
+                replace_field_number(prev_section_count, ['1' + str(index), 1])
             prev_section_count += 1
 
         # for record in reversed(sorted(to_be_removed)):
@@ -393,14 +393,12 @@ def process_single_record(metarecord, attribute, index):
             and metarecord['package'] != None) or ('subname' in metarecord and metarecord['subname'] != None \
             and ('parameters' not in metarecord or 'n' in metarecord['parameters'])) \
             or ('name' in metarecord and metarecord['name'] != None):
-                # print("IF: " + repr(metarecord) + "\n\n")
                 package_section_id = re.search(r'#2\d+\[\d+\]', Specfile2.metastring).group()
                 former_field_id = int(package_section_id[package_section_id.find('[') + 1:-1])
                 Specfile2.metastring = Specfile2.metastring.replace(package_section_id, '#!1' + package_section_id[package_section_id.find('[') + 1:-1])
                 Specfile2.SectionTags = Specfile2.SectionTags[:former_field_id] + [metarecord] + Specfile2.SectionTags[former_field_id:]
             elif 'subname' in metarecord and metarecord['subname'] != None:
             # or 'name' in metarecord and metarecord['name'] != None:
-                # print("ELIF: " + repr(metarecord) + "\n\n")
                 main_unit_section_id = re.search(r'#1\d+\[\d+\]', Specfile2.metastring).group()
                 former_field_id = int(main_unit_section_id[main_unit_section_id.find('[') + 1:-1])
                 Specfile2.metastring = Specfile2.metastring.replace(main_unit_section_id, '#!1' + main_unit_section_id[main_unit_section_id.find('[') + 1:-1])
@@ -503,7 +501,6 @@ def transform_gospec_to_spec2(go_specfile):
     [PredicateList_distinct.append(i) for i in PredicateList if not PredicateList_distinct.count(i)]
     PredicateList = PredicateList_distinct
     recreate_conditions()
-    # print(repr(PredicateList) + "\n\n")
 
     Specfile2.metastring = Specfile2.metastring.replace('#!', '#')
 

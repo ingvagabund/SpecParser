@@ -21,13 +21,13 @@ def remove_blocktype(single_block):
 def get_whitespace(current_string, order):
 
     if not isinstance(current_string, basestring):
-        return ""
+        return ''
 
     if current_string.isspace():
-        return "%" + str(order) + current_string
+        return '%' + str(order) + current_string
 
     metastring = current_string[:len(current_string) - len(current_string.lstrip())]
-    metastring += "%" + str(order)
+    metastring += '%' + str(order)
     metastring += current_string[len(current_string.rstrip()):]
 
     return metastring
@@ -36,7 +36,7 @@ def get_whitespace(current_string, order):
 
 def create_metastring(single_block, block_type):
 
-    metastring = ""
+    metastring = ''
 
     for i, key in enumerate(keys_list[block_type]):
 
@@ -117,7 +117,7 @@ def create_abstract_model(input_filepath):
 
     json_containing_parsed_spec = json.loads(parse_file(input_filepath))
 
-    if 'metastring' in json_containing_parsed_spec and json_containing_parsed_spec['metastring'] != "":
+    if 'metastring' in json_containing_parsed_spec and json_containing_parsed_spec['metastring'] != '':
         Specfile.block_list = json_containing_parsed_spec['block_list']
         Specfile.metastring = json_containing_parsed_spec['metastring']
     else:
@@ -144,7 +144,7 @@ def pretty_print_block(intern_field, block_type, indentation):
         length = len(intern_field['key']) + 1
 
         if 'option' in intern_field and intern_field['option'] is not None:
-            print("(" + intern_field['option'] + ")", end='')
+            print('(' + intern_field['option'] + ')', end='')
             length += 2 + len(intern_field['option'])
 
         print(':', end='')
@@ -159,11 +159,11 @@ def pretty_print_block(intern_field, block_type, indentation):
     elif block_type == BlockTypes.SectionTagType:
         print('%' + intern_field['keyword'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
-            print(" " + intern_field['name'], end='')
+            print(' ' + intern_field['name'], end='')
         if 'parameters' in intern_field and intern_field['parameters'] is not None:
-            print(" -" + intern_field['parameters'], end='')
+            print(' -' + intern_field['parameters'], end='')
         if 'subname' in intern_field and intern_field['subname'] is not None:
-            print(" " + intern_field['subname'], end='')
+            print(' ' + intern_field['subname'], end='')
         if not isinstance(intern_field['content'], list):
             print('\n' + intern_field['content'] + '\n\n', end='')
         else:
@@ -175,10 +175,10 @@ def pretty_print_block(intern_field, block_type, indentation):
         length = len(intern_field['keyword']) + 1
 
         if 'name' in intern_field and intern_field['name'] is not None:
-            print(" " + intern_field['name'], end='')
+            print(' ' + intern_field['name'], end='')
             length += len(intern_field['name']) + 1
         if 'options' in intern_field and intern_field['options'] is not None:
-            print(" -" + intern_field['options'], end='')
+            print(' -' + intern_field['options'], end='')
             length += len(intern_field['options']) + 1
 
         if length >= prettyprint_macroname_position:
@@ -191,14 +191,14 @@ def pretty_print_block(intern_field, block_type, indentation):
     elif block_type == BlockTypes.MacroConditionType:
         print('{' + intern_field['condition'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
-            print(" " + intern_field['name'] + ":", end='')
+            print(' ' + intern_field['name'] + ':', end='')
         print_pretty_field(intern_field['content'], 0)            
         print('}\n', end='')
 
     elif block_type == BlockTypes.MacroUndefinitionType:
         print('%' + intern_field['keyword'], end='')
         if 'name' in intern_field and intern_field['name'] is not None:
-            print(" " + intern_field['name'] + '\n', end='')
+            print(' ' + intern_field['name'] + '\n', end='')
 
     elif block_type == BlockTypes.CommentType:
         print(intern_field['content'] + '\n', end='')
@@ -210,7 +210,7 @@ def pretty_print_block(intern_field, block_type, indentation):
             print_pretty_field(intern_field['content'], indentation + 2)
         if 'else_keyword' in intern_field and intern_field['else_keyword'] is not None:
             print_indentation(indentation)
-            print("%" + intern_field['else_keyword'] + '\n', end='')
+            print('%' + intern_field['else_keyword'] + '\n', end='')
         if 'else_body' in intern_field and intern_field['else_body'] is not None:
             print_pretty_field(intern_field['else_body'], indentation + 2)
         print_indentation(indentation)
