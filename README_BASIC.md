@@ -7,7 +7,7 @@ and the whitespace characters used in the original specfile.
 
 SpecParser aims to:
 * simplify (and restrict) specfile structure by restricting the range of supported fields and keywords
-* simplify specfile editting by offering a wide range of functions manipulating the Specfile 2.0 model 
+* simplify specfile editing by offering a wide range of functions manipulating the Specfile 2.0 model 
 
 ## List of supported specfile fields:
 
