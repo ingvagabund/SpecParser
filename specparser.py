@@ -68,7 +68,7 @@ class SpecfileParserScanner(runtime.Scanner):
         ('CHANGELOG_KEYWORD', re.compile('(?i)CHANGELOG\\s*')),
         ('SINGLE_LOG', re.compile('\\*[\\W\\w]*?(?=\\*|$)')),
         ('PACKAGE_KEYWORD', re.compile('(?i)PACKAGE[ \\t\\r\\f\\v]*')),
-        ('PACKAGE_CONTENT', re.compile('(?i)[\\W\\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN)|$)\\s*')),
+        ('PACKAGE_CONTENT', re.compile('(?i)[\\W\\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN|FILES)|$)\\s*')),
     ]
     def __init__(self, str,*args,**kw):
         runtime.Scanner.__init__(self,None,{},str,*args,**kw)

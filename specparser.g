@@ -64,7 +64,7 @@ parser SpecfileParser:
     token CHANGELOG_KEYWORD: r'(?i)CHANGELOG\s*'
     token SINGLE_LOG: r'\*[\W\w]*?(?=\*|$)'
     token PACKAGE_KEYWORD: r'(?i)PACKAGE[ \t\r\f\v]*'
-    token PACKAGE_CONTENT: '(?i)[\W\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN)|$)\s*'
+    token PACKAGE_CONTENT: '(?i)[\W\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN|FILES)|$)\s*'
 
 
     rule goal:         begin spec_file END              {{ Specfile.end = END }}
