@@ -11,6 +11,8 @@ from model_2_methods import list_of_blocks
 GoSpecfile = SpecfileClass('GO spec')
 ExcludeArch = []
 PredicateList = []
+PredicateNames = []
+PredicateConditions = {}
 Specfile2 = SpecfileClass('Specfile 2.0')
 
 
@@ -28,18 +30,18 @@ def reduce_gospecfile():
                         del reduced_block_list[1][index]
                     else:
                         to_be_removed = []
-                        for (neco, neco2) in enumerate(single_record):
-                            if neco2['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)requires', neco2['key']) is not None:
-                                reduced_block_list[1][index] = append_dependency(reduced_block_list[1][index], 'runtime', neco2)
-                                to_be_removed.append([index, neco])
-                            elif neco2['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)buildrequires', neco2['key']) is not None:
-                                append_dependency(reduced_block_list[1][index], 'buildtime', neco2)
-                                to_be_removed.append([index, neco])
-                            elif neco2['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)excludearch', neco2['key']) is not None:
-                                append_dependency(reduced_block_list[1], 'excludearch', neco2)
-                                to_be_removed.append([index, neco])
+                        for (single_field_index, single_field) in enumerate(single_record):
+                            if single_field['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)requires', single_field['key']) is not None:
+                                reduced_block_list[1][index] = append_dependency(reduced_block_list[1][index], 'runtime', single_field)
+                                to_be_removed.append([index, single_field_index])
+                            elif single_field['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)buildrequires', single_field['key']) is not None:
+                                append_dependency(reduced_block_list[1][index], 'buildtime', single_field)
+                                to_be_removed.append([index, single_field_index])
+                            elif single_field['block_type'] == BlockTypes.HeaderTagType and re.match(r'(?i)excludearch', single_field['key']) is not None:
+                                append_dependency(reduced_block_list[1], 'excludearch', single_field)
+                                to_be_removed.append([index, single_field_index])
                             else:
-                                reduced_block_list[1][index][neco] = gospecfile_to_print(neco2)
+                                reduced_block_list[1][index][single_field_index] = gospecfile_to_print(single_field)
                                 
                         for record in reversed(sorted(to_be_removed)):
                             del reduced_block_list[1][record[0]][record[1]]
@@ -188,9 +190,9 @@ def gospecfile_to_print(single_record):
 
 def replace_field_number(prev_section_count, replacing):
 
-    to_be_replaced_list = re.findall(r'#' + str(replacing[0]), GoSpecfile.metastring)
+    to_be_replaced_list = re.findall(r'#' + str(replacing[0]) + '%', GoSpecfile.metastring)
     for replace_record in to_be_replaced_list:
-        GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str(replacing[1]) + str(prev_section_count))
+        GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str(replacing[1]) + str(prev_section_count) + '%')
 
 
 def parse_changelog(changelog):
@@ -216,6 +218,15 @@ def parse_changelog(changelog):
 
 
 
+def change_metastring(index_old, index_new, unit_index):
+
+    occurences = re.finditer(r'#!2' + str(index_old) + r'\[', GoSpecfile.metastring)
+    for single_occurence in occurences:
+        GoSpecfile.metastring = GoSpecfile.metastring.replace(single_occurence.group(), '#2<' + str(unit_index) + '>' + str(index_new) + '[')
+
+    return
+
+
 def process_unit_list():
 
     used_unit_names = []
@@ -233,14 +244,18 @@ def process_unit_list():
     for _ in range(len(used_unit_names) + 1):
         processed_unit_list.append([])
 
-    for single_record in GoSpecfile.unit_list:
+    for index, single_record in enumerate(GoSpecfile.unit_list):
         if 'subname' in single_record and single_record['subname'] != None:
+            change_metastring(index, len(processed_unit_list[used_unit_names.index(single_record['subname']) + 1]), used_unit_names.index(single_record['subname']) + 1)
             processed_unit_list[used_unit_names.index(single_record['subname']) + 1].append(single_record)
         elif 'name' in single_record and single_record['name'] != None:
+            change_metastring(index, len(processed_unit_list[used_unit_names.index(single_record['name']) + 1]), used_unit_names.index(single_record['name']) + 1)
             processed_unit_list[used_unit_names.index(single_record['name']) + 1].append(single_record)
         elif 'package' in single_record and single_record['package'] != None:
+            change_metastring(index, len(processed_unit_list[used_unit_names.index(single_record['package']) + 1]), used_unit_names.index(single_record['package']) + 1)
             processed_unit_list[used_unit_names.index(single_record['package']) + 1].append(single_record)
         elif single_record['block_type'] != BlockTypes.HeaderTagType:
+            change_metastring(index, len(processed_unit_list[0]), 0)
             processed_unit_list[0].append(single_record)
 
     GoSpecfile.unit_list = processed_unit_list
@@ -258,6 +273,18 @@ def add_excludearch_tags():
             GoSpecfile.main_unit = GoSpecfile.main_unit[:excludearch_tag[0]] + [excludearch_tag[1]] + GoSpecfile.main_unit[excludearch_tag[0]:]
 
 
+
+# TODO delete?
+def sections_position_plus_plus(section_position):
+
+    records_to_be_moved = re.findall(r'#!2\d+', GoSpecfile.metastring)
+    for single_record in reversed(sorted(records_to_be_moved)):
+        if int(single_record[3:]) >= section_position:
+            GoSpecfile.metastring = GoSpecfile.metastring.replace(single_record, r'#!2' + str(int(single_record[3:]) + 1))
+    return
+
+
+
 def create_go_spec_model(Specfile2):
 
     global ExcludeArch
@@ -268,26 +295,25 @@ def create_go_spec_model(Specfile2):
     if Specfile2.HeaderTags:
         for index, header_tag in enumerate(list_of_blocks[0]):
             if 'package' not in header_tag or header_tag['package'] == '':
-                if re.match(r'(?i)requires', header_tag['key']) is not None:
+                if re.match(r'(?i)excludearch', header_tag['key']) is not None or \
+                    re.match(r'(?i)requires', header_tag['key']) is not None or \
+                    re.match(r'(?i)buildrequires', header_tag['key']) is not None:
                     GoSpecfile.main_unit.append(header_tag)
                     replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ['0' + str(index), 1])
-                    prev_section_count += 1
-
-                elif re.match(r'(?i)buildrequires', header_tag['key']) is not None:
-                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ['0' + str(index), 1])
-                    prev_section_count += 1
-                    GoSpecfile.main_unit.append(header_tag)
-
-                elif re.match(r'(?i)excludearch', header_tag['key']) is not None:
-                    replace_field_number(str(prev_section_count) + '[' + str(index) + ']', ['0' + str(index), 1])
-                #     GoSpecfile.main_unit.append(header_tag)
-                    ExcludeArch.append([prev_section_count, header_tag])
                     prev_section_count += 1
 
                 elif 'AP' not in header_tag or header_tag['AP'] == '':
                     GoSpecfile.metadata.append(header_tag)
+
+                    to_be_replaced_list = re.findall(r'#' + str('0' + str(index)) + '%', GoSpecfile.metastring)
+                    for replace_record in to_be_replaced_list:
+                        GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('0' + str(len(GoSpecfile.metadata) - 1) + '[' + str(index) + ']') + '%')
             else:
                 GoSpecfile.unit_list.append(header_tag)
+
+                to_be_replaced_list = re.findall(r'#' + str('0' + str(index)) + '%', GoSpecfile.metastring)
+                for replace_record in to_be_replaced_list:
+                    GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('2' + str(len(GoSpecfile.unit_list) - 1) + '[' + str(index) + ']') + '%')
 
     if Specfile2.MacroDefinitions:
         for index, macro_definition in enumerate(list_of_blocks[2]):
@@ -295,7 +321,6 @@ def create_go_spec_model(Specfile2):
             replace_field_number(len(GoSpecfile.metadata) - 1, ['2' + str(index), 0])
 
     if Specfile2.SectionTags:
-        # to_be_removed = []
         for index, single_section in enumerate(Specfile2.SectionTags):
             if single_section['keyword'] == 'changelog':
                 GoSpecfile.history = single_section
@@ -329,6 +354,13 @@ def create_go_spec_model(Specfile2):
                 #                     GoSpecfile.unit_list.append(list_of_blocks[int(single_inner_section[0])][int(single_inner_section[1:single_inner_section.find('%')])])
                 #             to_be_removed.append([int(single_inner_section[0]), int(single_inner_section[1:single_inner_section.find('%')])])
 
+            elif single_section['keyword'] == 'files' and 'name' in single_section and single_section['name'] != '' and single_section['name'] != None:
+                GoSpecfile.unit_list.append(single_section)
+
+                to_be_replaced_list = re.findall(r'#' + str('1' + str(index)) + '%', GoSpecfile.metastring)
+                for replace_record in to_be_replaced_list:
+                    GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('2' + str(len(GoSpecfile.unit_list) - 1) + '[' + str(index) + ']') + '%')
+
             elif ('name' in single_section and single_section['name'] is not None) \
             or ('subname' in single_section and single_section['subname'] is not None
             and 'parameters' in single_section and 'n' in single_section['parameters']): # TODO subname?
@@ -343,20 +375,14 @@ def create_go_spec_model(Specfile2):
 
                 to_be_replaced_list = re.findall(r'#' + str('1' + str(index)) + '%', GoSpecfile.metastring)
                 for replace_record in to_be_replaced_list:
-                    GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('1' + str(len(GoSpecfile.main_unit)) + '[' + str(index) + ']') + '%')
+                    GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('1' + str(len(GoSpecfile.main_unit) - 1) + '[' + str(index) + ']') + '%')
 
             elif 'AP' not in single_section or single_section['AP'] == '':
                 GoSpecfile.main_unit.append(single_section)
-                replace_field_number(prev_section_count, ['1' + str(index), 1])
+                to_be_replaced_list = re.findall(r'#' + str('1' + str(index)) + '%', GoSpecfile.metastring)
+                for replace_record in to_be_replaced_list:
+                    GoSpecfile.metastring = GoSpecfile.metastring.replace(replace_record, '#!' + str('1' + str(len(GoSpecfile.main_unit) - 1) + '[' + str(index) + ']') + '%')
             prev_section_count += 1
-
-        # for record in reversed(sorted(to_be_removed)):
-        #     if record[0] == 0:
-        #         del GoSpecfile.metadata[record[1]]
-        #     else:
-        #         print(record)
-        #         print(str(GoSpecfile.main_unit))
-        #         del GoSpecfile.main_unit[record[1]]
 
     if Specfile2.Comments:
         for index in range(len(Specfile2.Comments)):
@@ -364,54 +390,79 @@ def create_go_spec_model(Specfile2):
         prev_section_count += len(Specfile2.Comments)
         GoSpecfile.comments = Specfile2.Comments
 
+    if Specfile2.MacroConditions:
+        for index in range(len(Specfile2.MacroConditions)):
+            replace_field_number(index, [str(3) + str(index), str(7)])
+    
     process_unit_list()
     if ExcludeArch != []:
         add_excludearch_tags()
     GoSpecfile.metastring = GoSpecfile.metastring.replace('#!', '#')
 
 
-def process_single_record(metarecord, attribute, index):
+def add_section_to_position(position, section_record):
 
-    global Specfile2, PredicateList
+    global Specfile2
+
+    if len(Specfile2.SectionTags) > position:
+        Specfile2.SectionTags[position] = section_record
+        return
+    if len(Specfile2.SectionTags) < position:
+        for _ in range(position - len(Specfile2.SectionTags)):
+            Specfile2.SectionTags.append('')
+    Specfile2.SectionTags.append(section_record)
+
+
+def process_single_record(metarecord, attribute, index, pos_in_unit):
+
+    global Specfile2, PredicateList, PredicateNames
 
     if not isinstance(metarecord, list):
         if metarecord['block_type'] == 0:
-            if attribute == 'main_unit':
+            if attribute == 'metadata':
+                metastring_id = re.search(r'#0' + str(index) + '\[\d+\]', Specfile2.metastring).group()
+            elif attribute == 'main_unit':
                 metastring_id = re.search(r'#1' + str(index) + '\[\d+\]', Specfile2.metastring).group()
-                former_field_id = int(metastring_id[metastring_id.find('[') + 1:-1])
-                Specfile2.HeaderTags = Specfile2.HeaderTags[:former_field_id] + [metarecord] + Specfile2.HeaderTags[former_field_id:]
-                Specfile2.metastring = Specfile2.metastring.replace(metastring_id, '#0' + str(former_field_id))
+            else:
+                metastring_id = re.search(r'#2<' + str(index) + '>' + str(pos_in_unit) + '\[\d+\]', Specfile2.metastring).group()
 
+            former_field_id = int(metastring_id[metastring_id.find('[') + 1:-1])
+            Specfile2.HeaderTags = Specfile2.HeaderTags[:former_field_id] + [metarecord] + Specfile2.HeaderTags[former_field_id:]
+            Specfile2.metastring = Specfile2.metastring.replace(metastring_id, '#!0' + str(former_field_id))
+
+            if attribute == 'main_unit':
                 to_be_replaced = re.findall(r'#1\d+%', Specfile2.metastring)
                 for single_replace in sorted(to_be_replaced):
                     Specfile2.metastring = re.sub(single_replace, r'#1' + str(int(single_replace[2:-1]) - 1) + '%', Specfile2.metastring)
-            else:
-                Specfile2.HeaderTags.append(metarecord)
 
         elif metarecord['block_type'] == 1:
             if ('keyword' in metarecord and metarecord['keyword'] == 'package') or ('package' in metarecord \
             and metarecord['package'] != None) or ('subname' in metarecord and metarecord['subname'] != None \
             and ('parameters' not in metarecord or 'n' in metarecord['parameters'])) \
             or ('name' in metarecord and metarecord['name'] != None):
-                package_section_id = re.search(r'#2\d+\[\d+\]', Specfile2.metastring).group()
+                package_section_id = re.search(r'#2<' + str(index) + '>' + str(pos_in_unit) + '\[\d+\]', Specfile2.metastring).group()
                 former_field_id = int(package_section_id[package_section_id.find('[') + 1:-1])
                 Specfile2.metastring = Specfile2.metastring.replace(package_section_id, '#!1' + package_section_id[package_section_id.find('[') + 1:-1])
-                Specfile2.SectionTags = Specfile2.SectionTags[:former_field_id] + [metarecord] + Specfile2.SectionTags[former_field_id:]
+                add_section_to_position(former_field_id, metarecord)
             elif 'subname' in metarecord and metarecord['subname'] != None:
             # or 'name' in metarecord and metarecord['name'] != None:
-                main_unit_section_id = re.search(r'#1\d+\[\d+\]', Specfile2.metastring).group()
-                former_field_id = int(main_unit_section_id[main_unit_section_id.find('[') + 1:-1])
+                main_unit_section_id = re.search(r'#1' + str(index) + r'\[\d+\]', Specfile2.metastring).group()
+                former_section_id = int(main_unit_section_id[main_unit_section_id.find('[') + 1:-1])
                 Specfile2.metastring = Specfile2.metastring.replace(main_unit_section_id, '#!1' + main_unit_section_id[main_unit_section_id.find('[') + 1:-1])
-                Specfile2.SectionTags = Specfile2.SectionTags[:former_field_id] + [metarecord] + Specfile2.SectionTags[former_field_id:]
-            else:
+                add_section_to_position(former_section_id, metarecord)
+            elif 'keyword' in metarecord and metarecord['keyword'] == 'changelog':
                 Specfile2.SectionTags.append(metarecord)
-            if 'keyword' in metarecord and metarecord['keyword'] == 'changelog':
                 Specfile2.metastring = Specfile2.metastring.replace('#30', '#!1' + str(len(Specfile2.SectionTags) - 1))
+            else:
+                section_id = re.search(r'#1' + str(index) + r'\[\d+\]', Specfile2.metastring).group()
+                former_section_id = int(section_id[section_id.find('[') + 1:-1])
+                add_section_to_position(former_section_id, metarecord)
+                Specfile2.metastring = Specfile2.metastring.replace(section_id, '#!1' + section_id[section_id.find('[') + 1:-1])
+
         elif metarecord['block_type'] == 2:
             Specfile2.MacroDefinitions.append(metarecord)
             index = len(Specfile2.HeaderTags) + len(Specfile2.MacroDefinitions) - 1
             Specfile2.metastring = re.sub(r'#0' + str(index), r'#!2' + str(index - len(Specfile2.HeaderTags)), Specfile2.metastring)
-        # TODO change metastring from #0x to #2x-headers
         elif metarecord['block_type'] == 5:
             Specfile2.Comments.append(metarecord)
         elif metarecord['block_type'] == 6:
@@ -419,10 +470,25 @@ def process_single_record(metarecord, attribute, index):
 
         if 'AP' in metarecord and metarecord['AP'] != []:
             PredicateList.append(metarecord['AP'])
+        #     for single_condition in metarecord['AP']:
+        #         if single_condition[0] not in PredicateNames:
+        #             PredicateNames.append(single_condition[0])
+        # #         PredicateList[-1].append(metarecord['package'])
+        #     if 'keyword' in metarecord and metarecord['keyword'] == 'package':
+        #         package_field_pattern = '#2<' + str(index) + '>' + str(pos_in_unit)
+        #         package_content_metastring = GoSpecfile.metastring[GoSpecfile.metastring.find(package_field_pattern):GoSpecfile.metastring.rfind(package_field_pattern)]
+        #         if '#6' in package_content_metastring:
+        #             condition_records_list = re.findall(r'#6\d+', package_content_metastring)
+        #             condition_records_list_distinct = []
+        #             [condition_records_list_distinct.append(i) for i in condition_records_list if not condition_records_list_distinct.count(i)]
+
+        #             for single_condition in condition_records_list_distinct:
+        #                 PredicateConditions.update({PredicateNames[int(single_condition[2:])]:metarecord['subname']})
 
     else:
-        for unit_field in metarecord:
-            process_single_record(unit_field, attribute, index)
+        for offset, unit_field in enumerate(metarecord):
+            process_single_record(unit_field, attribute, index, offset)
+
 
 
 def get_existing_condition_position(wanted_expression):
@@ -434,13 +500,28 @@ def get_existing_condition_position(wanted_expression):
             return index
 
 
+
+def add_packages_to_conditions():
+
+    global Specfile2
+
+    for section_index in range(len(Specfile2.Conditions)):
+        section_index_metastring = Specfile2.metastring[Specfile2.metastring.find(r'#1' + str(section_index)):Specfile2.metastring.rfind(r'#1' + str(section_index))]
+        if section_index_metastring != '' and \
+        Specfile2.SectionTags[int(section_index_metastring[2:int(section_index_metastring.find('%'))])]['keyword'] == 'package':
+            condition_records_list = re.findall(r'#6\d+\%0', section_index_metastring)
+            for single_condition_record in condition_records_list:
+                Specfile2.Conditions[1]['package'] = Specfile2.SectionTags[int(section_index_metastring[2:int(section_index_metastring.find('%'))])]['subname']
+
+
+
 def recreate_conditions():
 
     global Specfile2
 
     used_conditions = []
 
-    for single_predicate in PredicateList:
+    for single_predicate in sorted(PredicateList, key=len):
         single_condition = {}
 
         if len(single_predicate) > 1:
@@ -469,6 +550,9 @@ def recreate_conditions():
             else:
                 single_condition['condition'] = '?'
             Specfile2.MacroConditions.append(single_condition)
+            Specfile2.metastring = Specfile2.metastring.replace('#7', '#3')
+
+    add_packages_to_conditions()
 
 
 
@@ -476,32 +560,22 @@ def transform_gospec_to_spec2(go_specfile):
 
     global PredicateList
 
-    # print(repr(go_specfile.metastring) + "\n\n")
     Specfile2.metastring = go_specfile.metastring
     Specfile2.metastring = Specfile2.metastring.replace('#4', '#5')
 
     for attribute in ['metadata', 'main_unit', 'unit_list', 'history', 'comments']:
         if isinstance(getattr(go_specfile, attribute), list) and getattr(go_specfile, attribute) != []:
             for index, single_field in enumerate(getattr(go_specfile, attribute)):
-                process_single_record(single_field, attribute, index)
+                process_single_record(single_field, attribute, index, None)
 
         elif isinstance(getattr(go_specfile, attribute), dict) and getattr(go_specfile, attribute) != {}:
-            process_single_record(getattr(go_specfile, attribute), attribute, None)
+            process_single_record(getattr(go_specfile, attribute), attribute, None, None)
 
-
-    # for attribute_record in reversed(sorted(go_specfile.__dict__.iteritems())):
-        # if isinstance(attribute_record[1], list) and attribute_record[1] != []:
-        #     for index, single_field in enumerate(attribute_record[1]):
-        #         process_single_record(single_field, attribute_record[0], index)
-
-        # elif isinstance(attribute_record[1], dict) and attribute_record[1] != {}:
-        #     process_single_record(attribute_record[1], attribute_record[0], None)
+    Specfile2.metastring = Specfile2.metastring.replace('#!', '#')
 
     PredicateList_distinct = []
     [PredicateList_distinct.append(i) for i in PredicateList if not PredicateList_distinct.count(i)]
     PredicateList = PredicateList_distinct
     recreate_conditions()
-
-    Specfile2.metastring = Specfile2.metastring.replace('#!', '#')
 
     return Specfile2
