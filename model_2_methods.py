@@ -60,7 +60,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
             Specfile2.metastring += metastring1[:metastring1.find('%3')]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%3'):]
             
-            transform_spec1_to_spec2(block['content'], None)
+            transform_spec1_to_spec2(block['content'], package_name)
             del block['content']
 
         elif 'content' in block and block['block_type'] in [6]:
@@ -72,7 +72,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
             Specfile2.metastring += metastring1[:metastring1.find('%' + str(number_of_next_item))]
             metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%' + str(number_of_next_item)):]
 
-            transform_spec1_to_spec2(block['content'], None)
+            transform_spec1_to_spec2(block['content'], package_name)
             del block['content']
 
         if 'else_body' in block:
@@ -80,7 +80,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
                 Specfile2.metastring += metastring1[:metastring1.find('%5')]
                 metastring1 = '#' + str(block['block_type']) + str(sequence_number) + metastring1[metastring1.find('%5'):]
 
-                transform_spec1_to_spec2(block['else_body'], None)
+                transform_spec1_to_spec2(block['else_body'], package_name)
             del block['else_body']
 
         if 'keyword' in block and block['keyword'] == 'package':
@@ -90,7 +90,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
             transform_spec1_to_spec2(block['content'], block['subname'])
             del block['content']
 
-        elif 'keyword' in block and block['keyword'] == 'files':    # TODO
+        elif 'keyword' in block and block['keyword'] == 'files':
             block['content'] = re.findall(r'.*\s*', block['content'])
             used_file_fields = 0
             metastring = ''
