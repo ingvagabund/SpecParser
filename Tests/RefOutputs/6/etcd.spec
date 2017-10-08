@@ -266,6 +266,44 @@ unit_list:
             \ value store for\nshared configuration."
         condition:
           - if 0%{?with_devel}
+      - buildtime:
+            dependencies:
+              - name: golang(github.com/bgentry/speakeasy)
+              - name: golang(github.com/boltdb/bolt)
+              - name: golang(github.com/cheggaaa/pb)
+              - name: golang(github.com/cockroachdb/cmux)
+              - name: golang(github.com/coreos/go-semver/semver)
+              - name: golang(github.com/coreos/go-systemd/daemon)
+              - name: golang(github.com/coreos/go-systemd/util)
+              - name: golang(github.com/coreos/pkg/capnslog)
+              - name: golang(github.com/dustin/go-humanize)
+              - name: golang(github.com/ghodss/yaml)
+              - name: golang(github.com/gogo/protobuf/proto)
+              - name: golang(github.com/golang/protobuf/proto)
+              - name: golang(github.com/google/btree)
+              - name: golang(github.com/grpc-ecosystem/go-grpc-prometheus)
+              - name: golang(github.com/grpc-ecosystem/grpc-gateway/runtime)
+              - name: golang(github.com/grpc-ecosystem/grpc-gateway/utilities)
+              - name: golang(github.com/jonboulle/clockwork)
+              - name: golang(github.com/karlseguin/ccache)
+              - name: golang(github.com/kr/pty)
+              - name: golang(github.com/olekukonko/tablewriter)
+              - name: golang(github.com/prometheus/client_golang/prometheus)
+              - name: golang(github.com/spf13/cobra)
+              - name: golang(github.com/spf13/pflag)
+              - name: golang(github.com/ugorji/go/codec)
+              - name: golang(github.com/urfave/cli)
+              - name: golang(github.com/xiang90/probing)
+              - name: golang(golang.org/x/crypto/bcrypt)
+              - name: golang(golang.org/x/net/context)
+              - name: golang(golang.org/x/net/http2)
+              - name: golang(golang.org/x/time/rate)
+              - name: golang(google.golang.org/grpc)
+              - name: golang(google.golang.org/grpc/codes)
+              - name: golang(google.golang.org/grpc/credentials)
+              - name: golang(google.golang.org/grpc/grpclog)
+              - name: golang(google.golang.org/grpc/metadata)
+              - name: golang(google.golang.org/grpc/naming)
       - runtime:
             dependencies:
               - name: golang(github.com/bgentry/speakeasy)
@@ -340,62 +378,73 @@ unit_list:
           - if 0%{?with_unit_test}
 metastring: "#60%0 %1\n#012%0 %1 %3\n#013%0 %1 %3\n#014%0 %1 %3\n#40%0\n#41%0\n#015%0\
     \ %1 %3\n#016%0 %1 %3\n#60%3\n#017%0 %1 %3\n#018%0 %1 %3\n#019%0 %1 %3\n#020%0\
-    \ %1 %3\n#021%0 %1 %3\n#60%5\n\n#61%0 %1\n#0130%0 %1 %3\n#61%3\n#0131%0 %1   %3\n\
-    #61%5\n\n#62%0 %1\n#0132%0 %1%2 %3 \n#62%5\n\n#0133%0 %1        %3\n#0134%0 %1\
-    \    %3\n#0135%0 %1         %3\n#0136%0 %1            %3\n#42%0\n#0137%0 %1 %3\n\
-    #0138%0 %1     %3\n#0139%0 %1          %3\n#0140%0 %1     %3\n\n#00%0\t\t%2\n\
-    #01%0\t%2\n#02%0\t%2\n#03%0\t%2\n#04%0\t%2\n#05%0\t\t%2\n#06%0\t%2\n#07%0\t%2\n\
-    #08%0\t%2\n#09%0         %2\n#010%0         %2\n\n#43%0\n#011%0  %2\n#44%0\n#10[12]%0\
-    \  %2\n\n#63%0 %1\n#11[13]%0 %2\n#12[14]%0 %2\n#13[15]%0 %2\n#14[16]%0 %2\n#15[17]%0\
-    \ %2\n#16[18]%0 %2\n#17[19]%0 %2\n#18[20]%0 %2\n#19[21]%0 %2\n#110[22]%0 %2\n\
-    #111[23]%0 %2\n#112[24]%0 %2\n#113[25]%0 %2\n#114[26]%0 %2\n#115[27]%0 %2\n#116[28]%0\
-    \ %2\n#117[29]%0 %2\n#118[30]%0 %2\n#119[31]%0 %2\n#120[32]%0 %2\n#121[33]%0 %2\n\
-    #122[34]%0 %2\n#123[35]%0 %2\n#124[36]%0 %2\n#125[37]%0 %2\n#126[38]%0 %2\n#127[39]%0\
-    \ %2\n#128[40]%0 %2\n#129[41]%0 %2\n#130[42]%0 %2\n#131[43]%0 %2\n#132[44]%0 %2\n\
-    #133[45]%0 %2\n#134[46]%0 %2\n#135[47]%0 %2\n#136[48]%0 %2\n#137[49]%0 %2\n#63%5\n\
-    \n#138[50]%0\t%2\n\n#139[51]%0%1\t%2\n#140[52]%0%1 %2\n#141[53]%0%1 %2\n#142[54]%0%1\
-    \ %2\n\n#179%0\n%4\n\n#64%0 %1\n#2125[1]%0 %3\n#055%0        %2\n#056%0      %2\n\
-    \n#65%0 %1\n#143[57]%0 %2\n#144[58]%0 %2\n#145[59]%0 %2\n#146[60]%0 %2\n#147[61]%0\
-    \ %2\n#148[62]%0 %2\n#149[63]%0 %2\n#150[64]%0 %2\n#151[65]%0 %2\n#152[66]%0 %2\n\
-    #153[67]%0 %2\n#154[68]%0 %2\n#155[69]%0 %2\n#156[70]%0 %2\n#157[71]%0 %2\n#158[72]%0\
-    \ %2\n#159[73]%0 %2\n#160[74]%0 %2\n#161[75]%0 %2\n#162[76]%0 %2\n#163[77]%0 %2\n\
-    #164[78]%0 %2\n#165[79]%0 %2\n#166[80]%0 %2\n#167[81]%0 %2\n#168[82]%0 %2\n#169[83]%0\
-    \ %2\n#170[84]%0 %2\n#171[85]%0 %2\n#172[86]%0 %2\n#173[87]%0 %2\n#174[88]%0 %2\n\
-    #175[89]%0 %2\n#176[90]%0 %2\n#177[91]%0 %2\n#178[92]%0 %2\n#65%5\n\n#093%0 %2\n\
-    #094%0 %2\n#095%0 %2\n#096%0 %2\n#097%0 %2\n#098%0 %2\n#099%0 %2\n#0100%0 %2\n\
-    #0101%0 %2\n#0102%0 %2\n#0103%0 %2\n#0104%0 %2\n#0105%0 %2\n#0106%0 %2\n#0107%0\
-    \ %2\n#0108%0 %2\n#0109%0 %2\n#0110%0 %2\n#0111%0 %2\n#0112%0 %2\n#0113%0 %2\n\
-    #0114%0 %2\n#0115%0 %2\n#0116%0 %2\n#0117%0 %2\n#0118%0 %2\n#0119%0 %2\n#10[12]0%0\
-    \ %2\n#10[12]1%0 %2\n#10[12]2%0 %2\n#10[12]3%0 %2\n#10[12]4%0 %2\n#10[12]5%0 %2\n\
-    #10[12]6%0 %2\n#10[12]7%0 %2\n#10[12]8%0 %2\n\n#10[12]9%0 %2\n#11[13]0%0 %2\n\
-    #11[13]1%0 %2\n#11[13]2%0 %2\n#11[13]3%0 %2\n#11[13]4%0 %2\n#11[13]5%0 %2\n#11[13]6%0\
-    \ %2\n#11[13]7%0 %2\n#11[13]8%0 %2\n#11[13]9%0 %2\n#12[14]0%0 %2\n#12[14]1%0 %2\n\
-    #12[14]2%0 %2\n#12[14]3%0 %2\n#12[14]4%0 %2\n#12[14]5%0 %2\n#12[14]6%0 %2\n#12[14]7%0\
-    \ %2\n#12[14]8%0 %2\n#12[14]9%0 %2\n#13[15]0%0 %2\n#13[15]1%0 %2\n#13[15]2%0 %2\n\
-    #13[15]3%0 %2\n#13[15]4%0 %2\n#13[15]5%0 %2\n#13[15]6%0 %2\n#13[15]7%0 %2\n#13[15]8%0\
-    \ %2\n#13[15]9%0 %2\n#14[16]0%0 %2\n#14[16]1%0 %2\n#14[16]2%0 %2\n#14[16]3%0 %2\n\
-    #14[16]4%0 %2\n#14[16]5%0 %2\n#14[16]6%0 %2\n#14[16]7%0 %2\n#14[16]8%0 %2\n#14[16]9%0\
-    \ %2\n#15[17]0%0 %2\n#15[17]1%0 %2\n#15[17]2%0 %2\n#15[17]3%0 %2\n#15[17]4%0 %2\n\
-    #15[17]5%0 %2\n#15[17]6%0 %2\n#15[17]7%0 %2\n#15[17]8%0 %2\n#15[17]9%0 %2\n#16[18]0%0\
-    \ %2\n#16[18]1%0 %2\n#16[18]2%0 %2\n#16[18]3%0 %2\n#16[18]4%0 %2\n#16[18]5%0 %2\n\
-    #16[18]6%0 %2\n#16[18]7%0 %2\n#16[18]8%0 %2\n#16[18]9%0 %2\n#17[19]0%0 %2\n#17[19]1%0\
-    \ %2\n#17[19]2%0 %2\n#17[19]3%0 %2\n#17[19]4%0 %2\n#17[19]5%0 %2\n#17[19]6%0 %2\n\
-    #17[19]7%0 %2\n#17[19]8%0 %2\n#17[19]9%0 %2\n#18[20]0%0 %2\n#18[20]1%0 %2\n#18[20]2%0\
-    \ %2\n#18[20]3%0 %2\n#18[20]4%0 %2\n#18[20]5%0 %2\n#18[20]6%0 %2\n#18[20]7%0 %2\n\
-    #18[20]8%0 %2\n#18[20]9%0 %2\n#19[21]0%0 %2\n#19[21]1%0 %2\n#19[21]2%0 %2\n\n\
-    #2126[2]%0 %1\n%4\n#2125[1]%4#64%5\n\n#66%0 %1\n#2127[3]%0 %3\n#19[21]3%0    \
-    \     %2\n#45%0\n#19[21]4%0  %2\n\n#67%0 %1\n#46%0\n#47%0\n#67%5\n\n#48%0\n#19[21]5%0\
-    \        %2\n\n#2128[4]%0 %1\n%4\n#2127[3]%4#66%5\n\n#184%0\n%4\n\n#185%0\n%4\n\
-    \n#186%0\n%4\n\n#187%0\n%4\n\n#188%0\n%4\n\n#189%0\n%4\n\n#190%0\n%4\n\n#191%0\n\
-    %4\n#30%0%1#0141%0 %1 %3#30%3\n\n#192%0\n%40\n%41\n%42\n%43\n%44\n%45\n%46\n\n\
-    #68%0 %1\n#2129[14]%0 %1 %2 %3\n%40\n%41\n%42\n%43\n#68%5\n\n#69%0 %1\n#2130[15]%0\
-    \ %1 %2 %3\n%40\n%41\n#69%5\n\n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
+    \ %1 %3\n#021%0 %1 %3\n#60%5\n\n#61%0 %1\n#022%0 %1 %3\n#61%3\n#023%0 %1   %3\n\
+    #61%5\n\n#62%0 %1\n#024%0 %1%2 %3 \n#62%5\n\n#025%0 %1        %3\n#026%0 %1  \
+    \  %3\n#027%0 %1         %3\n#028%0 %1            %3\n#42%0\n#029%0 %1 %3\n#030%0\
+    \ %1     %3\n#031%0 %1          %3\n#032%0 %1     %3\n\n#00[0]%0\t\t%2\n#01[1]%0\t\
+    %2\n#02[2]%0\t%2\n#03[3]%0\t%2\n#04[4]%0\t%2\n#05[5]%0\t\t%2\n#06[6]%0\t%2\n#07[7]%0\t\
+    %2\n#08[8]%0\t%2\n#09[9]%0         %2\n#010[10]%0         %2\n\n#43%0\n#011[11]%0\
+    \  %2\n#44%0\n#10[12]%0  %2\n\n#63%0 %1\n#11[13]%0 %2\n#12[14]%0 %2\n#13[15]%0\
+    \ %2\n#14[16]%0 %2\n#15[17]%0 %2\n#16[18]%0 %2\n#17[19]%0 %2\n#18[20]%0 %2\n#19[21]%0\
+    \ %2\n#110[22]%0 %2\n#111[23]%0 %2\n#112[24]%0 %2\n#113[25]%0 %2\n#114[26]%0 %2\n\
+    #115[27]%0 %2\n#116[28]%0 %2\n#117[29]%0 %2\n#118[30]%0 %2\n#119[31]%0 %2\n#120[32]%0\
+    \ %2\n#121[33]%0 %2\n#122[34]%0 %2\n#123[35]%0 %2\n#124[36]%0 %2\n#125[37]%0 %2\n\
+    #126[38]%0 %2\n#127[39]%0 %2\n#128[40]%0 %2\n#129[41]%0 %2\n#130[42]%0 %2\n#131[43]%0\
+    \ %2\n#132[44]%0 %2\n#133[45]%0 %2\n#134[46]%0 %2\n#135[47]%0 %2\n#136[48]%0 %2\n\
+    #137[49]%0 %2\n#63%5\n\n#138[50]%0\t%2\n\n#139[51]%0%1\t%2\n#140[52]%0%1 %2\n\
+    #141[53]%0%1 %2\n#142[54]%0%1 %2\n\n#143[0]%0\n%4\n\n#64%0 %1\n#2<1>158[1]%0 %3\n\
+    #2<1>0[55]%0        %2\n#2<1>1[56]%0      %2\n\n#65%0 %1\n#2<1>2[57]%0 %2\n#2<1>3[58]%0\
+    \ %2\n#2<1>4[59]%0 %2\n#2<1>5[60]%0 %2\n#2<1>6[61]%0 %2\n#2<1>7[62]%0 %2\n#2<1>8[63]%0\
+    \ %2\n#2<1>9[64]%0 %2\n#2<1>10[65]%0 %2\n#2<1>11[66]%0 %2\n#2<1>12[67]%0 %2\n\
+    #2<1>13[68]%0 %2\n#2<1>14[69]%0 %2\n#2<1>15[70]%0 %2\n#2<1>16[71]%0 %2\n#2<1>17[72]%0\
+    \ %2\n#2<1>18[73]%0 %2\n#2<1>19[74]%0 %2\n#2<1>20[75]%0 %2\n#2<1>21[76]%0 %2\n\
+    #2<1>22[77]%0 %2\n#2<1>23[78]%0 %2\n#2<1>24[79]%0 %2\n#2<1>25[80]%0 %2\n#2<1>26[81]%0\
+    \ %2\n#2<1>27[82]%0 %2\n#2<1>28[83]%0 %2\n#2<1>29[84]%0 %2\n#2<1>30[85]%0 %2\n\
+    #2<1>31[86]%0 %2\n#2<1>32[87]%0 %2\n#2<1>33[88]%0 %2\n#2<1>34[89]%0 %2\n#2<1>35[90]%0\
+    \ %2\n#2<1>36[91]%0 %2\n#2<1>37[92]%0 %2\n#65%5\n\n#2<1>38[93]%0 %2\n#2<1>39[94]%0\
+    \ %2\n#2<1>40[95]%0 %2\n#2<1>41[96]%0 %2\n#2<1>42[97]%0 %2\n#2<1>43[98]%0 %2\n\
+    #2<1>44[99]%0 %2\n#2<1>45[100]%0 %2\n#2<1>46[101]%0 %2\n#2<1>47[102]%0 %2\n#2<1>48[103]%0\
+    \ %2\n#2<1>49[104]%0 %2\n#2<1>50[105]%0 %2\n#2<1>51[106]%0 %2\n#2<1>52[107]%0\
+    \ %2\n#2<1>53[108]%0 %2\n#2<1>54[109]%0 %2\n#2<1>55[110]%0 %2\n#2<1>56[111]%0\
+    \ %2\n#2<1>57[112]%0 %2\n#2<1>58[113]%0 %2\n#2<1>59[114]%0 %2\n#2<1>60[115]%0\
+    \ %2\n#2<1>61[116]%0 %2\n#2<1>62[117]%0 %2\n#2<1>63[118]%0 %2\n#2<1>64[119]%0\
+    \ %2\n#2<1>65[120]%0 %2\n#2<1>66[121]%0 %2\n#2<1>67[122]%0 %2\n#2<1>68[123]%0\
+    \ %2\n#2<1>69[124]%0 %2\n#2<1>70[125]%0 %2\n#2<1>71[126]%0 %2\n#2<1>72[127]%0\
+    \ %2\n#2<1>73[128]%0 %2\n\n#2<1>74[129]%0 %2\n#2<1>75[130]%0 %2\n#2<1>76[131]%0\
+    \ %2\n#2<1>77[132]%0 %2\n#2<1>78[133]%0 %2\n#2<1>79[134]%0 %2\n#2<1>80[135]%0\
+    \ %2\n#2<1>81[136]%0 %2\n#2<1>82[137]%0 %2\n#2<1>83[138]%0 %2\n#2<1>84[139]%0\
+    \ %2\n#2<1>85[140]%0 %2\n#2<1>86[141]%0 %2\n#2<1>87[142]%0 %2\n#2<1>88[143]%0\
+    \ %2\n#2<1>89[144]%0 %2\n#2<1>90[145]%0 %2\n#2<1>91[146]%0 %2\n#2<1>92[147]%0\
+    \ %2\n#2<1>93[148]%0 %2\n#2<1>94[149]%0 %2\n#2<1>95[150]%0 %2\n#2<1>96[151]%0\
+    \ %2\n#2<1>97[152]%0 %2\n#2<1>98[153]%0 %2\n#2<1>99[154]%0 %2\n#2<1>100[155]%0\
+    \ %2\n#2<1>101[156]%0 %2\n#2<1>102[157]%0 %2\n#2<1>103[158]%0 %2\n#2<1>104[159]%0\
+    \ %2\n#2<1>105[160]%0 %2\n#2<1>106[161]%0 %2\n#2<1>107[162]%0 %2\n#2<1>108[163]%0\
+    \ %2\n#2<1>109[164]%0 %2\n#2<1>110[165]%0 %2\n#2<1>111[166]%0 %2\n#2<1>112[167]%0\
+    \ %2\n#2<1>113[168]%0 %2\n#2<1>114[169]%0 %2\n#2<1>115[170]%0 %2\n#2<1>116[171]%0\
+    \ %2\n#2<1>117[172]%0 %2\n#2<1>118[173]%0 %2\n#2<1>119[174]%0 %2\n#2<1>120[175]%0\
+    \ %2\n#2<1>121[176]%0 %2\n#2<1>122[177]%0 %2\n#2<1>123[178]%0 %2\n#2<1>124[179]%0\
+    \ %2\n#2<1>125[180]%0 %2\n#2<1>126[181]%0 %2\n#2<1>127[182]%0 %2\n#2<1>128[183]%0\
+    \ %2\n#2<1>129[184]%0 %2\n#2<1>130[185]%0 %2\n#2<1>131[186]%0 %2\n#2<1>132[187]%0\
+    \ %2\n#2<1>133[188]%0 %2\n#2<1>134[189]%0 %2\n#2<1>135[190]%0 %2\n#2<1>136[191]%0\
+    \ %2\n#2<1>137[192]%0 %2\n#2<1>138[193]%0 %2\n#2<1>139[194]%0 %2\n#2<1>140[195]%0\
+    \ %2\n#2<1>141[196]%0 %2\n#2<1>142[197]%0 %2\n#2<1>143[198]%0 %2\n#2<1>144[199]%0\
+    \ %2\n#2<1>145[200]%0 %2\n#2<1>146[201]%0 %2\n#2<1>147[202]%0 %2\n#2<1>148[203]%0\
+    \ %2\n#2<1>149[204]%0 %2\n#2<1>150[205]%0 %2\n#2<1>151[206]%0 %2\n#2<1>152[207]%0\
+    \ %2\n#2<1>153[208]%0 %2\n#2<1>154[209]%0 %2\n#2<1>155[210]%0 %2\n#2<1>156[211]%0\
+    \ %2\n#2<1>157[212]%0 %2\n\n#2<1>159[2]%0 %1\n%4\n#2<1>158[1]%4#64%5\n\n#66%0\
+    \ %1\n#2<2>3[3]%0 %3\n#2<2>0[213]%0         %2\n#45%0\n#2<2>1[214]%0  %2\n\n#67%0\
+    \ %1\n#46%0\n#47%0\n#67%5\n\n#48%0\n#2<2>2[215]%0        %2\n\n#2<2>4[4]%0 %1\n\
+    %4\n#2<2>3[3]%4#66%5\n\n#144[5]%0\n%4\n\n#145[6]%0\n%4\n\n#146[7]%0\n%4\n\n#147[8]%0\n\
+    %4\n\n#148[9]%0\n%4\n\n#149[10]%0\n%4\n\n#150[11]%0\n%4\n\n#151[12]%0\n%4\n#70%0%1#033%0\
+    \ %1 %3#70%3\n\n#152[13]%0\n%40\n%41\n%42\n%43\n%44\n%45\n%46\n\n#68%0 %1\n#2<3>0[14]%0\
+    \ %1 %2 %3\n%40\n%41\n%42\n%43\n#68%5\n\n#69%0 %1\n#2<4>0[15]%0 %1 %2 %3\n%40\n\
+    %41\n#69%5\n\n#30%0\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
     \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\
-    \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n"
+    \n%4\n\n%4\n\n%4\n\n%4\n\n%4\n\n"
 main_unit:
   - description: A highly-available key value store for shared configuration.
   - prep: "%setup -q -n %{name}-%{commit}\n# move content of vendor under Godeps as\
@@ -460,44 +509,14 @@ main_unit:
           - '%{_bindir}/%{name}ctl'
           - '%dir %attr(-,%{name},%{name}) %{_sharedstatedir}/%{name}'
           - '%{_unitdir}/%{name}.service'
+  - runtime:
+        dependencies:
+          - name: systemd
+          - name: systemd
+          - name: systemd
+          - name: shadow-utils
   - buildtime:
         dependencies:
-          - name: golang(google.golang.org/grpc/naming)
-          - name: golang(google.golang.org/grpc/metadata)
-          - name: golang(google.golang.org/grpc/grpclog)
-          - name: golang(google.golang.org/grpc/credentials)
-          - name: golang(google.golang.org/grpc/codes)
-          - name: golang(google.golang.org/grpc)
-          - name: golang(golang.org/x/time/rate)
-          - name: golang(golang.org/x/net/http2)
-          - name: golang(golang.org/x/net/context)
-          - name: golang(golang.org/x/crypto/bcrypt)
-          - name: golang(github.com/xiang90/probing)
-          - name: golang(github.com/urfave/cli)
-          - name: golang(github.com/ugorji/go/codec)
-          - name: golang(github.com/spf13/pflag)
-          - name: golang(github.com/spf13/cobra)
-          - name: golang(github.com/prometheus/client_golang/prometheus)
-          - name: golang(github.com/olekukonko/tablewriter)
-          - name: golang(github.com/kr/pty)
-          - name: golang(github.com/karlseguin/ccache)
-          - name: golang(github.com/jonboulle/clockwork)
-          - name: golang(github.com/grpc-ecosystem/grpc-gateway/utilities)
-          - name: golang(github.com/grpc-ecosystem/grpc-gateway/runtime)
-          - name: golang(github.com/grpc-ecosystem/go-grpc-prometheus)
-          - name: golang(github.com/google/btree)
-          - name: golang(github.com/golang/protobuf/proto)
-          - name: golang(github.com/gogo/protobuf/proto)
-          - name: golang(github.com/ghodss/yaml)
-          - name: golang(github.com/dustin/go-humanize)
-          - name: golang(github.com/coreos/pkg/capnslog)
-          - name: golang(github.com/coreos/go-systemd/util)
-          - name: golang(github.com/coreos/go-systemd/daemon)
-          - name: golang(github.com/coreos/go-semver/semver)
-          - name: golang(github.com/cockroachdb/cmux)
-          - name: golang(github.com/cheggaaa/pb)
-          - name: golang(github.com/boltdb/bolt)
-          - name: golang(github.com/bgentry/speakeasy)
           - name: systemd
           - name: golang(google.golang.org/grpc/transport)
           - name: golang(google.golang.org/grpc/naming)
@@ -537,12 +556,6 @@ main_unit:
           - name: golang(github.com/boltdb/bolt)
           - name: golang(github.com/bgentry/speakeasy)
           - name: '%{?go_compiler:compiler(go-compiler)}%{!?go_compiler:golang}'
-  - runtime:
-        dependencies:
-          - name: systemd
-          - name: systemd
-          - name: systemd
-          - name: shadow-utils
 history:
     '60':
         comment: '- https://fedoraproject.org/wiki/Changes/golang1.7'
