@@ -1,32 +1,12 @@
-import argparse, json, io
+import json, io
+from abstract_model import RawSpecFile, BlockTypes
 
-from abstract_model import SpecfileClass, BlockTypes
-
+Specfile = RawSpecFile()
 
 class Block(object):
 
     def __init__(self, type):
         self.block_type = type
-
-
-Specfile = SpecfileClass('Parser')
-
-
-def open_file(input_filepath):
-    
-    if input_filepath == None:
-        input_filepath = raw_input("Enter path to a specfile or json file: ")
-
-    try:
-        input_file = io.open(input_filepath, mode='r', encoding="utf-8")
-        input_data = input_file.read()
-        input_file.close()
-        return input_data
-    except IOError:
-        print('ERROR: Cannot open input file ' + input_filepath + '!')
-        sys.exit(3)
-
-
 %%
 parser SpecfileParser:
 
@@ -70,11 +50,11 @@ parser SpecfileParser:
     rule goal:         begin spec_file END              {{ Specfile.end = END }}
 
 
-    rule begin:        BEGINNING                        {{ Specfile.beginning = BEGINNING }} 
+    rule begin:        BEGINNING                        {{ Specfile.beginning = BEGINNING }}
 
 
     rule spec_file:    header rest?
-                                                        
+
 
     rule header:       tag*
 
@@ -97,7 +77,7 @@ parser SpecfileParser:
     rule rest:      PERCENT_SIGN keyword
                     |  commentary                       {{ Specfile.block_list.append(commentary) }}
 
-    
+
 
     rule keyword:      section                          {{ Specfile.block_list.append(section) }}
                     |  macro_definition                 {{ Specfile.block_list.append(macro_definition) }}
@@ -109,7 +89,7 @@ parser SpecfileParser:
 
 
 
-    rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_OPTIONS? MACRO_BODY      
+    rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_OPTIONS? MACRO_BODY
                                                                         {{ block = Block(BlockTypes.MacroDefinitionType) }}
                                                                         {{ block.name = MACRO_NAME }}
                                                                         {{ block.keyword = MACRO_DEF_KEYWORD }}
@@ -146,22 +126,22 @@ parser SpecfileParser:
                                         {{ block.keyword = CONDITION_BEG_KEYWORD }}
                                         {{ block.expression = CONDITION_EXPRESSION }}
                                         {{ block.content = [] }}
-                                        {{ count = len(Specfile.block_list) }} 
+                                        {{ count = len(Specfile.block_list) }}
                                         {{ parse('spec_file', CONDITION_BODY) }}
                                         {{ if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                                         {{ block.else_body = [] }}
-                        ((condition_definition              
+                        ((condition_definition
                                         {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition) }}
                                         {{ elif condition_definition not in block.content: block.content.append(condition_definition) }}
-                        | body          {{ count = len(Specfile.block_list) }} 
+                        | body          {{ count = len(Specfile.block_list) }}
                                         {{ parse('spec_file', body) }}
                                         {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:] }}
                                         {{ elif Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
                         ) PERCENT_SIGN?)*
                         (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN
-                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del condition_else_body }} 
+                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del condition_else_body }}
                         ((condition_else_inner | else_body)
                                         {{ if 'else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del else_body }}
                                         {{ if 'condition_else_inner' in locals() and condition_else_inner not in block.else_body: block.else_body.append(condition_else_inner); del condition_else_inner }}
@@ -174,7 +154,7 @@ parser SpecfileParser:
 
 
 
-    rule condition_else_body:       CONDITION_BODY                      {{ return CONDITION_BODY }}                     
+    rule condition_else_body:       CONDITION_BODY                      {{ return CONDITION_BODY }}
 
 
 
@@ -219,7 +199,7 @@ parser SpecfileParser:
                                                                         {{ if 'NAME' in locals(): block.subname = NAME + NEWLINE }}
                                                                         {{ else: block.subname = NEWLINE }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
-                                                                        {{ else: block.parameters = None }}                                                                        
+                                                                        {{ else: block.parameters = None }}
                                                                         {{ parse('spec_file', PACKAGE_CONTENT) }}
                                                                         {{ block.content = Specfile.block_list[count:] }}
                                                                         {{ Specfile.block_list = Specfile.block_list[:count] }}
@@ -245,6 +225,20 @@ parser SpecfileParser:
 
 
 %%
+def open_file(input_filepath):
+
+    if input_filepath == None:
+        input_filepath = raw_input("Enter path to a specfile or json file: ")
+
+    try:
+        input_file = io.open(input_filepath, mode='r', encoding="utf-8")
+        input_data = input_file.read()
+        input_file.close()
+        return input_data
+    except IOError:
+        print('ERROR: Cannot open input file ' + input_filepath + '!')
+        sys.exit(3)
+
 def parse_file(input_filepath):
 
     inputfile_content = open_file(input_filepath)
