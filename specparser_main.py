@@ -108,10 +108,10 @@ def process_args(args):
         Specfile1 = transform_spec2_to_spec1(Specfile2)
         print(json.dumps(remove_empty_fields(Specfile1), default=lambda o: o.__dict__, sort_keys=True))
 
-    if args.go_spec:     # TODO how to determine?
+    if args.go_spec:
         create_go_spec_model(Specfile2)
 
-        # print(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
+        # print(json.dumps(GoSpecfile, default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
         # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True))))
         
         if args.json:
