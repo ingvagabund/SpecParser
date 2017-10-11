@@ -26,7 +26,13 @@ keys_list = [
     ['author', 'date', 'mark', 'comment']
 ]
 
+class RawSpecFile(object):
 
+    def __init__(self):
+        self.block_list = []
+        self.metastring = ""
+        self.beginning = ""
+        self.end = ""
 
 class SpecfileClass(object):
 
@@ -54,8 +60,3 @@ class SpecfileClass(object):
 
         self.block_list = []
         self.metastring = ""
-
-        if class_type == 'Parser':
-            self.beginning = ""
-            self.end = ""
-            

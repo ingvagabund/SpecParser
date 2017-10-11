@@ -16,3 +16,6 @@ examples:
 
 clean:
 	rm -rf *.pyc ./Tests/Outputs ./Examples/Outputs
+
+gen:
+	yapps2 specparser.g specparser.py
