@@ -19,3 +19,5 @@ clean:
 
 gen:
 	yapps2 specparser.g specparser.py
+	sed -i "s/from __future__ import print_function//" specparser.py
+	sed -i "s/# FROMFUTUREIMPORT/from __future__ import print_function/" specparser.py
