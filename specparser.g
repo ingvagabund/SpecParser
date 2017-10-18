@@ -1,7 +1,23 @@
+# FROMFUTUREIMPORT
 import json, io
 from abstract_model import RawSpecFile, BlockTypes
 
-Specfile = RawSpecFile()
+class SpecfileStack(object):
+
+    def __init__(self):
+        self.stack = []
+
+    def push(self):
+        self.stack.append(RawSpecFile())
+
+    def pop(self):
+        return self.stack.pop()
+
+    def top(self):
+        return self.stack[-1]
+
+specfileStack = SpecfileStack()
+
 
 class Block(object):
 
@@ -47,10 +63,10 @@ parser SpecfileParser:
     token PACKAGE_CONTENT: '(?i)[\W\w]*?(?=%(PACKAGE|PREP|BUILD|INSTALL|CHECK|PRE|PREUN|POST|POSTUN|FILES)|$)\s*'
 
 
-    rule goal:         begin spec_file END              {{ Specfile.end = END }}
+    rule goal:         begin spec_file END              {{ specfileStack.top().end = END }}
 
 
-    rule begin:        BEGINNING                        {{ Specfile.beginning = BEGINNING }}
+    rule begin:        BEGINNING                        {{ specfileStack.push(); specfileStack.top().beginning = BEGINNING }}
 
 
     rule spec_file:    header rest?
@@ -60,8 +76,8 @@ parser SpecfileParser:
 
 
 
-    rule tag:          header_tag                       {{ Specfile.block_list.append(header_tag) }}
-                    |  commentary                       {{ Specfile.block_list.append(commentary) }}
+    rule tag:          header_tag                       {{ specfileStack.top().block_list.append(header_tag) }}
+                    |  commentary                       {{ specfileStack.top().block_list.append(commentary) }}
                     |  PERCENT_SIGN keyword
 
 
@@ -75,17 +91,17 @@ parser SpecfileParser:
 
 
     rule rest:      PERCENT_SIGN keyword
-                    |  commentary                       {{ Specfile.block_list.append(commentary) }}
+                    |  commentary                       {{ specfileStack.top().block_list.append(commentary) }}
 
 
 
-    rule keyword:      section                          {{ Specfile.block_list.append(section) }}
-                    |  macro_definition                 {{ Specfile.block_list.append(macro_definition) }}
-                    |  macro_undefine                   {{ Specfile.block_list.append(macro_undefine) }}
-                    |  condition_definition             {{ Specfile.block_list.append(condition_definition) }}
+    rule keyword:      section                          {{ specfileStack.top().block_list.append(section) }}
+                    |  macro_definition                 {{ specfileStack.top().block_list.append(macro_definition) }}
+                    |  macro_undefine                   {{ specfileStack.top().block_list.append(macro_undefine) }}
+                    |  condition_definition             {{ specfileStack.top().block_list.append(condition_definition) }}
                     |  LEFT_PARENTHESIS macro_condition RIGHT_PARENTHESIS WHITESPACE
                                                         {{ macro_condition.ending = WHITESPACE }}
-                                                        {{ Specfile.block_list.append(macro_condition) }}
+                                                        {{ specfileStack.top().block_list.append(macro_condition) }}
 
 
 
@@ -100,14 +116,14 @@ parser SpecfileParser:
 
 
     rule macro_condition:   EXCLAMATION_MARK? QUESTION_MARK MACRO_NAME COLON MACRO_CONDITION_BODY
-                                                                        {{ count = len(Specfile.block_list) }}
                                                                         {{ block = Block(BlockTypes.MacroConditionType) }}
                                                                         {{ block.name = MACRO_NAME }}
                                                                         {{ if 'EXCLAMATION_MARK' in locals(): block.condition = EXCLAMATION_MARK + QUESTION_MARK }}
                                                                         {{ else: block.condition = QUESTION_MARK }}
+                                                                        {{ specfileStack.push() }}
                                                                         {{ parse('spec_file', MACRO_CONDITION_BODY) }}
-                                                                        {{ block.content = Specfile.block_list[count:] }}
-                                                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
+                                                                        {{ block.content = specfileStack.top().block_list }}
+                                                                        {{ specfileStack.pop() }}
                                                                         {{ return block }}
 
 
@@ -126,24 +142,24 @@ parser SpecfileParser:
                                         {{ block.keyword = CONDITION_BEG_KEYWORD }}
                                         {{ block.expression = CONDITION_EXPRESSION }}
                                         {{ block.content = [] }}
-                                        {{ count = len(Specfile.block_list) }}
+                                        {{ specfileStack.push() }}
                                         {{ parse('spec_file', CONDITION_BODY) }}
-                                        {{ if Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
-                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
+                                        {{ block.content = specfileStack.top().block_list }}
+                                        {{ specfileStack.pop() }}
                                         {{ block.else_body = [] }}
                         ((condition_definition
                                         {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition) }}
                                         {{ elif condition_definition not in block.content: block.content.append(condition_definition) }}
-                        | body          {{ count = len(Specfile.block_list) }}
+                        | body          {{ specfileStack.push() }}
                                         {{ parse('spec_file', body) }}
-                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and Specfile.block_list[count:] not in block.content[-1].content: block.content[-1].content += Specfile.block_list[count:] }}
-                                        {{ elif Specfile.block_list[count:] not in block.content: block.content += Specfile.block_list[count:] }}
-                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
+                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword: block.content[-1].content += specfileStack.top().block_list }}
+                                        {{ else: block.content += specfileStack.top().block_list }}
+                                        {{ specfileStack.pop() }}
                         ) PERCENT_SIGN?)*
                         (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN
-                                        {{ if 'condition_else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', condition_else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del condition_else_body }}
+                                        {{ if 'condition_else_body' in locals(): specfileStack.push(); parse('spec_file', condition_else_body); block.else_body += specfileStack.top().block_list; specfileStack.pop(); del condition_else_body }}
                         ((condition_else_inner | else_body)
-                                        {{ if 'else_body' in locals(): count = len(Specfile.block_list); parse('spec_file', else_body); block.else_body += Specfile.block_list[count:]; Specfile.block_list = Specfile.block_list[:count]; del else_body }}
+                                        {{ if 'else_body' in locals(): specfileStack.push(); parse('spec_file', else_body); block.else_body += specfileStack.top().block_list; specfileStack.pop(); del else_body }}
                                         {{ if 'condition_else_inner' in locals() and condition_else_inner not in block.else_body: block.else_body.append(condition_else_inner); del condition_else_inner }}
                         PERCENT_SIGN?)*)?
                         CONDITION_END_KEYWORD
@@ -192,17 +208,17 @@ parser SpecfileParser:
                                                                         {{ if 'option' in locals(): block.name = option }}
                                                                         {{ else: block.name = None }}
                                                                         {{ return block }}
-                        |                                               {{ count = len(Specfile.block_list) }}
-                            PACKAGE_KEYWORD (DASH PARAMETERS)? NAME? NEWLINE PACKAGE_CONTENT
+                        |   PACKAGE_KEYWORD (DASH PARAMETERS)? NAME? NEWLINE PACKAGE_CONTENT
                                                                         {{ block = Block(BlockTypes.SectionTagType) }}
                                                                         {{ block.keyword = PACKAGE_KEYWORD }}
                                                                         {{ if 'NAME' in locals(): block.subname = NAME + NEWLINE }}
                                                                         {{ else: block.subname = NEWLINE }}
                                                                         {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
                                                                         {{ else: block.parameters = None }}
+                                                                        {{ specfileStack.push() }}
                                                                         {{ parse('spec_file', PACKAGE_CONTENT) }}
-                                                                        {{ block.content = Specfile.block_list[count:] }}
-                                                                        {{ Specfile.block_list = Specfile.block_list[:count] }}
+                                                                        {{ block.content = specfileStack.top().block_list }}
+                                                                        {{ specfileStack.pop() }}
                                                                         {{ return block }}
                         |                                               {{ block = Block(BlockTypes.SectionTagType) }}
                                                                         {{ block.content = [] }}
@@ -248,4 +264,4 @@ def parse_file(input_filepath):
         return inputfile_content
     except ValueError, e:
         parse('goal', inputfile_content)
-        return json.dumps(Specfile, default=lambda o: o.__dict__, sort_keys=True)
+        return json.dumps(specfileStack.top(), default=lambda o: o.__dict__, sort_keys=True)
