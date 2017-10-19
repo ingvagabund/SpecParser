@@ -2,68 +2,15 @@ from __future__ import print_function
 import json
 from copy import deepcopy
 
-from abstract_model import *
+from abstract_model import SpecfileClass, BlockTypes, keys_list
+from abstract_model import prettyprint_headervalue_position, prettyprint_macroname_position
 from specparser import parse_file, open_file
+from metastring import Metastring
 
 
 
 Specfile = SpecfileClass('Specfile 1.0')
 metastring_list = []
-
-
-
-def remove_blocktype(single_block):
-
-    # del single_block['block_type']
-    return single_block
-
-
-def get_whitespace(current_string, order):
-
-    if not isinstance(current_string, basestring):
-        return ''
-
-    if current_string.isspace():
-        return '%' + str(order) + current_string
-
-    metastring = current_string[:len(current_string) - len(current_string.lstrip())]
-    metastring += '%' + str(order)
-    metastring += current_string[len(current_string.rstrip()):]
-
-    return metastring
-
-
-
-def create_metastring(single_block, block_type):
-
-    metastring = ''
-
-    for i, key in enumerate(keys_list[block_type]):
-
-        if key in single_block:
-
-            if isinstance(single_block[key], dict):
-                metastring += create_metastring(single_block[key], single_block[key]['block_type'])
-
-                if 'keyword' in single_block and single_block['keyword'] == 'package':
-                    metastring += '%' + str(i)
-
-            else:
-                if isinstance(single_block[key], list):
-                    if single_block[key] != []:
-                        for j, record in enumerate(single_block[key]):
-                            if isinstance(record, basestring):
-                                metastring += get_whitespace(record, i)
-                                single_block[key][j] = record.strip()
-                else:
-                    if single_block[key] is not None:
-                        metastring += get_whitespace(single_block[key], i)
-                        single_block[key] = single_block[key].strip()
-
-                # if 'metastring' in single_block and len(single_block['metastring']) > len(metastring):
-                #     return single_block
-
-    return metastring
 
 
 
@@ -76,7 +23,7 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
         if predicate_list != []:
             single_block['AP'] = predicate_list
 
-        Specfile.metastring += '#' + create_metastring(single_block, single_block['block_type'])
+        Specfile.metastring += '#' + Metastring.create_metastring(single_block, single_block['block_type'])
 
         # Section Tag, package section
         if single_block['block_type'] == BlockTypes.SectionTagType and 'package' in single_block['keyword']:
@@ -85,11 +32,11 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
                 count = len(Specfile.block_list)
                 json_to_specfile_class(single_block['content'], predicate_list)
                 Specfile.block_list = Specfile.block_list[:count]
-            Specfile.block_list.append(remove_blocktype(single_block))
+            Specfile.block_list.append(single_block)
 
         # Condition
         elif single_block['block_type'] == BlockTypes.ConditionType:
-            Specfile.block_list.append(remove_blocktype(single_block))
+            Specfile.block_list.append(single_block)
             count = len(Specfile.block_list)
             if 'content' in single_block and single_block['content'] != []:
                 json_to_specfile_class(single_block['content'], predicate_list + [[single_block['expression'], 1, single_block['keyword']]])
@@ -99,7 +46,7 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
 
         # MacroCondition
         elif single_block['block_type'] == BlockTypes.MacroConditionType:
-            Specfile.block_list.append(remove_blocktype(single_block))
+            Specfile.block_list.append(single_block)
             count = len(Specfile.block_list)
             if 'content' in single_block and single_block['content'] != []:
                 if 'condition' in single_block and '!' in single_block['condition']:
@@ -109,7 +56,7 @@ def json_to_specfile_class(json_containing_parsed_spec, predicate_list):
             Specfile.block_list = Specfile.block_list[:count]
 
         else:
-            Specfile.block_list.append(remove_blocktype(single_block))
+            Specfile.block_list.append(single_block)
 
 
 
@@ -125,7 +72,7 @@ def create_abstract_model(input_filepath):
         Specfile.metastring += json_containing_parsed_spec['metastring']
         json_to_specfile_class(json_containing_parsed_spec['block_list'], [])
         Specfile.metastring += json_containing_parsed_spec['end']
-        
+
 
 
 def print_indentation(indentation):
@@ -387,6 +334,12 @@ def remove_empty_fields(Specfile):
                 elif isinstance(value, list):
                     for (index, single_record) in enumerate(value):
                         reduced_value[index] = reduce_inner_block(single_record)
+
+    # Specfile 2.0 JSON representation
+    elif isinstance(Specfile, dict):
+        for key in Specfile.keys():
+            if Specfile[key] is None or Specfile[key] == []:
+                reduced_Specfile.pop(key, None)
 
     # Specfile 2.0 abstract model
     else:

@@ -4,7 +4,6 @@ import json
 import argparse
 import ruamel.yaml
 
-# from specparser import parse_specfile
 from tests import run_tests
 from examples import run_examples
 from model_methods import create_abstract_model, Specfile, class_to_specfile
@@ -109,7 +108,7 @@ def process_args(args):
         print(json.dumps(remove_empty_fields(Specfile1), default=lambda o: o.__dict__, sort_keys=True))
 
     if args.go_spec:
-        create_go_spec_model(Specfile2)
+        create_go_spec_model(json.dumps(remove_empty_fields(Specfile2), default=lambda o: o.__dict__, sort_keys=True))
 
         # print(json.dumps(GoSpecfile, default=lambda o: o.__dict__, sort_keys=True) + "\n\n")
         # print(ruamel.yaml.dump(ruamel.yaml.safe_load(json.dumps(reduce_gospecfile(), default=lambda o: o.__dict__, sort_keys=True))))
@@ -122,8 +121,8 @@ def process_args(args):
 
     # args.debug is set => read and process input specfile, transform into 2.0 and then back to 1.0
     if args.debug and args.model == 3:
-        Specfile2_from_gospec = transform_gospec_to_spec2(GoSpecfile)
-        print(json.dumps(remove_empty_fields(Specfile2_from_gospec), default=lambda o: o.__dict__, sort_keys=True))
+        Specfile2_from_gospec = transform_gospec_to_spec2(json.dumps(GoSpecfile, default=lambda o: o.__dict__, sort_keys=True))
+        print(json.dumps(remove_empty_fields(json.loads(Specfile2_from_gospec)), default=lambda o: o.__dict__, sort_keys=True))
 
 
 
