@@ -3,7 +3,7 @@ import re
 from copy import deepcopy
 
 from abstract_model import SpecfileClass, BlockTypes
-from model_methods import create_metastring
+from metastring import Metastring
 
 Specfile2 = SpecfileClass('Specfile 2.0')
 list_of_blocks = []
@@ -103,7 +103,7 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
                 elif single_file[0] == '#':
                     metastring += '#5' + str(len(list_of_blocks[5]))
                     list_of_blocks[5].append({'block_type': 5, 'content': block['content'][idx], 'files': block['name'], 'position': idx})
-                    metastring += create_metastring(list_of_blocks[5][-1], list_of_blocks[5][-1]['block_type'])
+                    metastring += Metastring.create_metastring(list_of_blocks[5][-1], list_of_blocks[5][-1]['block_type'])
                     to_be_removed.append(idx)
                     first = True
                 else:
@@ -120,9 +120,6 @@ def transform_spec1_to_spec2(Specfile1_block_list, package_name):
                 del block['content'][record]
 
             metastring1 = metastring1.replace('%4', metastring)
-
-        # if 'end_keyword' in block and block['end_keyword'] != '':
-        #     Specfile1_metastring_list = Specfile1_metastring_list[1:]
 
         Specfile2.metastring += block_metastring_list[0] + metastring1
 
@@ -251,7 +248,7 @@ def process_blocks():
             if pos != -1:
                 comment_metastring = re.findall(r'\s*#5' + metastring2[1:metastring2.find('%')] + r'[^#]*', metastring1)[0]
                 pre_comment_whitespace = re.findall(r'[^#]*', comment_metastring)[0]
-                post_comment_whitespace = re.search(r'\s*$', comment_metastring).group() #comment_metastring[comment_metastring.find(r'\s*$'):]
+                post_comment_whitespace = re.search(r'\s*$', comment_metastring).group()
 
                 # due to some unicode assignment failures
                 tmp = []
@@ -263,9 +260,6 @@ def process_blocks():
 
                 del block_list[pos]['content']
                 block_list[pos]['content'] = tmp
-                # block_list[pos]['content'][0] += pre_comment_whitespace
-                # block_list[pos]['content'][0] += list_of_blocks[int(metastring2[0])][int(metastring2[1:metastring2.find('%')])]['content']
-                # block_list[pos]['content'][0] += post_comment_whitespace
                 if len(block_list[pos]['content']) == 1:
                     block_list[pos]['content'] = block_list[pos]['content'][0]
                     metastring1 = metastring1.replace(comment_metastring, post_comment_whitespace)
@@ -290,12 +284,6 @@ def process_blocks():
 
 
 
-def remove_block_ids(metastring):
-
-    return re.sub(r'#\d+%', '#%', metastring)
-
-
-
 def transform_spec2_to_spec1(Specfile2):
 
     global metastring_list
@@ -307,7 +295,7 @@ def transform_spec2_to_spec1(Specfile2):
     metastring_list = metastring_list[1:]
 
     (Specfile1.block_list, Specfile1.metastring) = process_blocks()
-    Specfile1.metastring = remove_block_ids(Specfile1.metastring)
+    Specfile1.metastring = Metastring.remove_block_ids(Specfile1.metastring)
 
     return Specfile1
 
