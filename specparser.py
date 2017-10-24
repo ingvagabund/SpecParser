@@ -1,5 +1,5 @@
 from __future__ import print_function
-import json, io
+import json
 from abstract_model import RawSpecFile, BlockTypes
 
 class Block(object):
@@ -347,27 +347,15 @@ def parseByRule(goal, text):
     e = runtime.wrap_error_reporter(P, goal)
     return e, P._rawSpecFile
 
-def open_file(input_filepath):
+class RawSpecFileParser(object):
 
-    if input_filepath == None:
-        input_filepath = raw_input("Enter path to a specfile or json file: ")
+  def __init__(self, specfile):
+    self._specfile = specfile
+    self._rawSpecfile = None
 
-    try:
-        input_file = io.open(input_filepath, mode='r', encoding="utf-8")
-        input_data = input_file.read()
-        input_file.close()
-        return input_data
-    except IOError:
-        print('ERROR: Cannot open input file ' + input_filepath + '!')
-        sys.exit(3)
+  def parse(self):
+     _, self._rawSpecfile = parseByRule("goal", self._specfile)
+     return self
 
-def parse_file(input_filepath):
-
-    inputfile_content = open_file(input_filepath)
-
-    try:
-        json_object = json.loads(inputfile_content)
-        return inputfile_content
-    except ValueError, e:
-        _, spec = parseByRule("goal", inputfile_content)
-        return json.dumps(spec, default=lambda o: o.__dict__, sort_keys=True)
+  def json(self):
+     return json.loads(json.dumps(self._rawSpecfile, default=lambda o: o.__dict__, sort_keys=True))
