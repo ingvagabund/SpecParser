@@ -2,23 +2,6 @@ from __future__ import print_function
 import json, io
 from abstract_model import RawSpecFile, BlockTypes
 
-class SpecfileStack(object):
-
-    def __init__(self):
-        self.stack = []
-
-    def push(self):
-        self.stack.append(RawSpecFile())
-
-    def pop(self):
-        return self.stack.pop()
-
-    def top(self):
-        return self.stack[-1]
-
-specfileStack = SpecfileStack()
-
-
 class Block(object):
 
     def __init__(self, type):
@@ -77,12 +60,12 @@ class SpecfileParser(runtime.Parser):
         begin = self.begin(_context)
         spec_file = self.spec_file(_context)
         END = self._scan('END', context=_context)
-        specfileStack.top().end = END
+        self._rawSpecFile.end = END
 
     def begin(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'begin', [])
         BEGINNING = self._scan('BEGINNING', context=_context)
-        specfileStack.push(); specfileStack.top().beginning = BEGINNING
+        self._rawSpecFile.beginning = BEGINNING
 
     def spec_file(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'spec_file', [])
@@ -100,10 +83,10 @@ class SpecfileParser(runtime.Parser):
         _token = self._peek('PERCENT_SIGN', 'TAG_KEY', 'COMMENT', context=_context)
         if _token == 'TAG_KEY':
             header_tag = self.header_tag(_context)
-            specfileStack.top().block_list.append(header_tag)
+            self._rawSpecFile.block_list.append(header_tag)
         elif _token == 'COMMENT':
             commentary = self.commentary(_context)
-            specfileStack.top().block_list.append(commentary)
+            self._rawSpecFile.block_list.append(commentary)
         else: # == 'PERCENT_SIGN'
             PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
             keyword = self.keyword(_context)
@@ -127,30 +110,30 @@ class SpecfileParser(runtime.Parser):
             keyword = self.keyword(_context)
         else: # == 'COMMENT'
             commentary = self.commentary(_context)
-            specfileStack.top().block_list.append(commentary)
+            self._rawSpecFile.block_list.append(commentary)
 
     def keyword(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'keyword', [])
         _token = self._peek('LEFT_PARENTHESIS', 'SECTION_KEY', 'SECTION_KEY_NOPARSE', 'PACKAGE_KEYWORD', 'CHANGELOG_KEYWORD', 'MACRO_DEF_KEYWORD', 'MACRO_UNDEF_KEYWORD', 'CONDITION_BEG_KEYWORD', context=_context)
         if _token not in ['LEFT_PARENTHESIS', 'MACRO_DEF_KEYWORD', 'MACRO_UNDEF_KEYWORD', 'CONDITION_BEG_KEYWORD']:
             section = self.section(_context)
-            specfileStack.top().block_list.append(section)
+            self._rawSpecFile.block_list.append(section)
         elif _token == 'MACRO_DEF_KEYWORD':
             macro_definition = self.macro_definition(_context)
-            specfileStack.top().block_list.append(macro_definition)
+            self._rawSpecFile.block_list.append(macro_definition)
         elif _token == 'MACRO_UNDEF_KEYWORD':
             macro_undefine = self.macro_undefine(_context)
-            specfileStack.top().block_list.append(macro_undefine)
+            self._rawSpecFile.block_list.append(macro_undefine)
         elif _token == 'CONDITION_BEG_KEYWORD':
             condition_definition = self.condition_definition(_context)
-            specfileStack.top().block_list.append(condition_definition)
+            self._rawSpecFile.block_list.append(condition_definition)
         else: # == 'LEFT_PARENTHESIS'
             LEFT_PARENTHESIS = self._scan('LEFT_PARENTHESIS', context=_context)
             macro_condition = self.macro_condition(_context)
             RIGHT_PARENTHESIS = self._scan('RIGHT_PARENTHESIS', context=_context)
             WHITESPACE = self._scan('WHITESPACE', context=_context)
             macro_condition.ending = WHITESPACE
-            specfileStack.top().block_list.append(macro_condition)
+            self._rawSpecFile.block_list.append(macro_condition)
 
     def macro_definition(self, _parent=None):
         _context = self.Context(_parent, self._scanner, 'macro_definition', [])
@@ -179,10 +162,8 @@ class SpecfileParser(runtime.Parser):
         block.name = MACRO_NAME
         if 'EXCLAMATION_MARK' in locals(): block.condition = EXCLAMATION_MARK + QUESTION_MARK
         else: block.condition = QUESTION_MARK
-        specfileStack.push()
-        parse('spec_file', MACRO_CONDITION_BODY)
-        block.content = specfileStack.top().block_list
-        specfileStack.pop()
+        _, rawSpecFile = parseByRule('spec_file', MACRO_CONDITION_BODY)
+        block.content = rawSpecFile.block_list
         return block
 
     def commentary(self, _parent=None):
@@ -207,10 +188,8 @@ class SpecfileParser(runtime.Parser):
         block.keyword = CONDITION_BEG_KEYWORD
         block.expression = CONDITION_EXPRESSION
         block.content = []
-        specfileStack.push()
-        parse('spec_file', CONDITION_BODY)
-        block.content = specfileStack.top().block_list
-        specfileStack.pop()
+        _, rawSpecFile = parseByRule('spec_file', CONDITION_BODY)
+        block.content = rawSpecFile.block_list
         block.else_body = []
         while self._peek('CONDITION_ELSE_KEYWORD', 'CONDITION_END_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context) in ['CONDITION_BEG_KEYWORD', 'CONDITION_BODY']:
             _token = self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
@@ -220,25 +199,23 @@ class SpecfileParser(runtime.Parser):
                 elif condition_definition not in block.content: block.content.append(condition_definition)
             else: # == 'CONDITION_BODY'
                 body = self.body(_context)
-                specfileStack.push()
-                parse('spec_file', body)
-                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword: block.content[-1].content += specfileStack.top().block_list
-                else: block.content += specfileStack.top().block_list
-                specfileStack.pop()
+                _, rawSpecFile = parseByRule('spec_file', body)
+                if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword: block.content[-1].content += rawSpecFile.block_list
+                else: block.content += rawSpecFile.block_list
             if self._peek('PERCENT_SIGN', 'CONDITION_ELSE_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
                 PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
         if self._peek('CONDITION_ELSE_KEYWORD', 'CONDITION_END_KEYWORD', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context) == 'CONDITION_ELSE_KEYWORD':
             CONDITION_ELSE_KEYWORD = self._scan('CONDITION_ELSE_KEYWORD', context=_context)
             condition_else_body = self.condition_else_body(_context)
             PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
-            if 'condition_else_body' in locals(): specfileStack.push(); parse('spec_file', condition_else_body); block.else_body += specfileStack.top().block_list; specfileStack.pop(); del condition_else_body
+            if 'condition_else_body' in locals(): _, rawSpecFile = parseByRule('spec_file', condition_else_body); block.else_body += rawSpecFile.block_list; del condition_else_body
             while self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) != 'CONDITION_END_KEYWORD':
                 _token = self._peek('CONDITION_BEG_KEYWORD', 'CONDITION_BODY', context=_context)
                 if _token == 'CONDITION_BEG_KEYWORD':
                     condition_else_inner = self.condition_else_inner(_context)
                 else: # == 'CONDITION_BODY'
                     else_body = self.else_body(_context)
-                if 'else_body' in locals(): specfileStack.push(); parse('spec_file', else_body); block.else_body += specfileStack.top().block_list; specfileStack.pop(); del else_body
+                if 'else_body' in locals(): _, rawSpecFile = parseByRule('spec_file', else_body); block.else_body += rawSpecFile.block_list; del else_body
                 if 'condition_else_inner' in locals() and condition_else_inner not in block.else_body: block.else_body.append(condition_else_inner); del condition_else_inner
                 if self._peek('PERCENT_SIGN', 'CONDITION_BEG_KEYWORD', 'CONDITION_BODY', 'CONDITION_END_KEYWORD', context=_context) == 'PERCENT_SIGN':
                     PERCENT_SIGN = self._scan('PERCENT_SIGN', context=_context)
@@ -328,10 +305,8 @@ class SpecfileParser(runtime.Parser):
             else: block.subname = NEWLINE
             if 'PARAMETERS' in locals(): block.parameters = PARAMETERS
             else: block.parameters = None
-            specfileStack.push()
-            parse('spec_file', PACKAGE_CONTENT)
-            block.content = specfileStack.top().block_list
-            specfileStack.pop()
+            _, rawSpecFile = parseByRule('spec_file', PACKAGE_CONTENT)
+            block.content = rawSpecFile.block_list
             return block
         else: # == 'CHANGELOG_KEYWORD'
             block = Block(BlockTypes.SectionTagType)
@@ -365,6 +340,13 @@ def parse(rule, text):
 # End -- grammar generated by Yapps
 
 
+
+def parseByRule(goal, text):
+    P = SpecfileParser(SpecfileParserScanner(text))
+    P._rawSpecFile = RawSpecFile()
+    e = runtime.wrap_error_reporter(P, goal)
+    return e, P._rawSpecFile
+
 def open_file(input_filepath):
 
     if input_filepath == None:
@@ -387,5 +369,5 @@ def parse_file(input_filepath):
         json_object = json.loads(inputfile_content)
         return inputfile_content
     except ValueError, e:
-        parse('goal', inputfile_content)
-        return json.dumps(specfileStack.top(), default=lambda o: o.__dict__, sort_keys=True)
+        _, spec = parseByRule("goal", inputfile_content)
+        return json.dumps(spec, default=lambda o: o.__dict__, sort_keys=True)
