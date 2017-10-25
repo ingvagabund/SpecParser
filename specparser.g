@@ -2,10 +2,72 @@
 import json
 from abstract_model import RawSpecFile, BlockTypes
 
-class Block(object):
+class HeaderTagBlock(object):
+    def __init__(self, key, content, option=None):
+        self.block_type = BlockTypes.HeaderTagType
+        self.key = key
+        self.option = option
+        self.content = content
 
-    def __init__(self, type):
-        self.block_type = type
+class SectionBlock(object):
+    def __init__(self, keyword, parameters, name, subname, content):
+        self.block_type = BlockTypes.SectionTagType
+        self.keyword = keyword
+        self.content = content
+        self.parameters = parameters
+        self.subname = subname
+        self.name = name
+
+class PackageBlock(object):
+    def __init__(self, keyword, parameters, subname, content):
+        self.block_type = BlockTypes.SectionTagType
+        self.keyword = keyword
+        self.content = content
+        self.parameters = parameters
+        self.subname = subname
+
+class ChangelogBlock(object):
+    def __init__(self, keyword, content):
+        self.block_type = BlockTypes.SectionTagType
+        self.keyword = keyword
+        self.content = content
+
+class MacroDefinitionBlock(object):
+    def __init__(self, name, keyword, options, body):
+        self.block_type = BlockTypes.MacroDefinitionType
+        self.name = name
+        self.keyword = keyword
+        self.options = options
+        self.body = body
+
+class MacroUndefinitionBlock(object):
+    def __init__(self, name, keyword):
+        self.block_type = BlockTypes.MacroUndefinitionType
+        self.name = name
+        self.keyword = keyword
+
+class MacroConditionBlock(object):
+    def __init__(self, name, condition, content):
+        self.block_type = BlockTypes.MacroConditionType
+        self.name = name
+        self.condition = condition
+        self.content = content
+
+class CommentBlock(object):
+    def __init__(self, content):
+        self.block_type = BlockTypes.CommentType
+        self.content = content
+
+class ConditionBlock(object):
+    def __init__(self, keyword, expression, content, else_body, end_keyword, else_keyword):
+        self.block_type = BlockTypes.ConditionType
+        self.keyword = keyword
+        self.expression = expression
+        self.content = content
+        self.else_body = else_body
+        self.end_keyword = end_keyword
+        self.else_keyword = else_keyword
+
 %%
 parser SpecfileParser:
 
@@ -65,11 +127,9 @@ parser SpecfileParser:
 
 
 
-    rule header_tag:   TAG_KEY COLON TAG_VALUE          {{ block = Block(BlockTypes.HeaderTagType) }}
-                                                        {{ if TAG_KEY.find('(') == -1: block.key = TAG_KEY; block.option = None }}
-                                                        {{ else: block.key = TAG_KEY[:TAG_KEY.find('(')]; block.option = TAG_KEY[TAG_KEY.find('(')+1:-1] }}
-                                                        {{ block.content = TAG_VALUE }}
-                                                        {{ return block }}
+    rule header_tag:   TAG_KEY COLON TAG_VALUE          {{ if TAG_KEY.find('(') == -1: key = TAG_KEY; option = None }}
+                                                        {{ else: key = TAG_KEY[:TAG_KEY.find('(')]; option = TAG_KEY[TAG_KEY.find('(')+1:-1] }}
+                                                        {{ return HeaderTagBlock(key, TAG_VALUE, option) }}
 
 
 
@@ -89,28 +149,20 @@ parser SpecfileParser:
 
 
     rule macro_definition: MACRO_DEF_KEYWORD MACRO_NAME MACRO_OPTIONS? MACRO_BODY
-                                                                        {{ block = Block(BlockTypes.MacroDefinitionType) }}
-                                                                        {{ block.name = MACRO_NAME }}
-                                                                        {{ block.keyword = MACRO_DEF_KEYWORD }}
-                                                                        {{ if 'MACRO_OPTIONS' in locals(): block.options = MACRO_OPTIONS }}
-                                                                        {{ else: block.options = None }}
-                                                                        {{ block.body = MACRO_BODY }}
-                                                                        {{ return block }}
+                                                                        {{ if 'MACRO_OPTIONS' in locals(): options = MACRO_OPTIONS }}
+                                                                        {{ else: options = None }}
+                                                                        {{ return MacroDefinitionBlock(MACRO_NAME, MACRO_DEF_KEYWORD, options, MACRO_BODY) }}
 
 
     rule macro_condition:   EXCLAMATION_MARK? QUESTION_MARK MACRO_NAME COLON MACRO_CONDITION_BODY
-                                                                        {{ block = Block(BlockTypes.MacroConditionType) }}
-                                                                        {{ block.name = MACRO_NAME }}
-                                                                        {{ if 'EXCLAMATION_MARK' in locals(): block.condition = EXCLAMATION_MARK + QUESTION_MARK }}
-                                                                        {{ else: block.condition = QUESTION_MARK }}
+                                                                        {{ if 'EXCLAMATION_MARK' in locals(): condition = EXCLAMATION_MARK + QUESTION_MARK }}
+                                                                        {{ else: condition = QUESTION_MARK }}
                                                                         {{ _, rawSpecFile = parseByRule('spec_file', MACRO_CONDITION_BODY) }}
-                                                                        {{ block.content = rawSpecFile.block_list }}
-                                                                        {{ return block }}
+                                                                        {{ return MacroConditionBlock(MACRO_NAME, condition, rawSpecFile.block_list) }}
 
 
-    rule commentary:  COMMENT                                           {{ block = Block(BlockTypes.CommentType) }}
-                                                                        {{ block.content = COMMENT }}
-                                                                        {{ return block }}
+    rule commentary:  COMMENT                                           {{ return CommentBlock(COMMENT) }}
+
 
 
 
@@ -119,31 +171,27 @@ parser SpecfileParser:
 
 
     rule condition_definition:  CONDITION_BEG_KEYWORD CONDITION_EXPRESSION CONDITION_BODY PERCENT_SIGN
-                                        {{ block = Block(BlockTypes.ConditionType) }}
-                                        {{ block.keyword = CONDITION_BEG_KEYWORD }}
-                                        {{ block.expression = CONDITION_EXPRESSION }}
-                                        {{ block.content = [] }}
+                                        {{ block_content = [] }}
                                         {{ _, rawSpecFile = parseByRule('spec_file', CONDITION_BODY) }}
-                                        {{ block.content = rawSpecFile.block_list }}
-                                        {{ block.else_body = [] }}
+                                        {{ block_content = rawSpecFile.block_list }}
+                                        {{ block_else_body = [] }}
                         ((condition_definition
-                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword and condition_definition not in block.content[-1].content: block.content[-1].content.append(condition_definition) }}
-                                        {{ elif condition_definition not in block.content: block.content.append(condition_definition) }}
+                                        {{ if block_content[-1].block_type == BlockTypes.SectionTagType and 'package' in block_content[-1].keyword and condition_definition not in block_content[-1].content: block_content[-1].content.append(condition_definition) }}
+                                        {{ elif condition_definition not in block_content: block_content.append(condition_definition) }}
                         | body          {{ _, rawSpecFile = parseByRule('spec_file', body) }}
-                                        {{ if block.content[-1].block_type == BlockTypes.SectionTagType and 'package' in block.content[-1].keyword: block.content[-1].content += rawSpecFile.block_list }}
-                                        {{ else: block.content += rawSpecFile.block_list }}
+                                        {{ if block_content[-1].block_type == BlockTypes.SectionTagType and 'package' in block_content[-1].keyword: block_content[-1].content += rawSpecFile.block_list }}
+                                        {{ else: block_content += rawSpecFile.block_list }}
                         ) PERCENT_SIGN?)*
                         (CONDITION_ELSE_KEYWORD condition_else_body PERCENT_SIGN
-                                        {{ if 'condition_else_body' in locals(): _, rawSpecFile = parseByRule('spec_file', condition_else_body); block.else_body += rawSpecFile.block_list; del condition_else_body }}
+                                        {{ if 'condition_else_body' in locals(): _, rawSpecFile = parseByRule('spec_file', condition_else_body); block_else_body += rawSpecFile.block_list; del condition_else_body }}
                         ((condition_else_inner | else_body)
-                                        {{ if 'else_body' in locals(): _, rawSpecFile = parseByRule('spec_file', else_body); block.else_body += rawSpecFile.block_list; del else_body }}
-                                        {{ if 'condition_else_inner' in locals() and condition_else_inner not in block.else_body: block.else_body.append(condition_else_inner); del condition_else_inner }}
+                                        {{ if 'else_body' in locals(): _, rawSpecFile = parseByRule('spec_file', else_body); block_else_body += rawSpecFile.block_list; del else_body }}
+                                        {{ if 'condition_else_inner' in locals() and condition_else_inner not in block_else_body: block_else_body.append(condition_else_inner); del condition_else_inner }}
                         PERCENT_SIGN?)*)?
                         CONDITION_END_KEYWORD
-                                        {{ block.end_keyword = CONDITION_END_KEYWORD }}
-                                        {{ if 'CONDITION_ELSE_KEYWORD' in locals(): block.else_keyword = CONDITION_ELSE_KEYWORD }}
-                                        {{ else: block.else_keyword = None }}
-                                        {{ return block }}
+                                        {{ if 'CONDITION_ELSE_KEYWORD' in locals(): block_else_keyword = CONDITION_ELSE_KEYWORD }}
+                                        {{ else: block_else_keyword = None }}
+                                        {{ return ConditionBlock(CONDITION_BEG_KEYWORD, CONDITION_EXPRESSION, block_content, block_else_body, CONDITION_END_KEYWORD, block_else_keyword) }}
 
 
 
@@ -164,44 +212,34 @@ parser SpecfileParser:
 
 
     rule section:           SECTION_KEY option? (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT
-                                                                        {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.keyword = SECTION_KEY }}
-                                                                        {{ block.content = NEWLINE + SECTION_CONTENT }}
-                                                                        {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
-                                                                        {{ else: block.parameters = None }}
-                                                                        {{ if 'NAME' in locals(): block.subname = NAME }}
-                                                                        {{ else: block.subname = None }}
-                                                                        {{ if 'option' in locals(): block.name = option }}
-                                                                        {{ else: block.name = None }}
-                                                                        {{ return block }}
+                                                                        {{ parameters = None }}
+                                                                        {{ subname = None }}
+                                                                        {{ name = None }}
+                                                                        {{ if 'PARAMETERS' in locals(): parameters = PARAMETERS }}
+                                                                        {{ if 'NAME' in locals(): subname = NAME }}
+                                                                        {{ if 'option' in locals(): name = option }}
+                                                                        {{ return SectionBlock(SECTION_KEY, parameters, name, subname, NEWLINE + SECTION_CONTENT) }}
                         |   SECTION_KEY_NOPARSE option?  (DASH PARAMETERS)? NAME? NEWLINE SECTION_CONTENT_NOPARSE
-                                                                        {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.keyword = SECTION_KEY_NOPARSE }}
-                                                                        {{ block.content = NEWLINE + SECTION_CONTENT_NOPARSE }}
-                                                                        {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
-                                                                        {{ else: block.parameters = None }}
-                                                                        {{ if 'NAME' in locals(): block.subname = NAME }}
-                                                                        {{ else: block.subname = None }}
-                                                                        {{ if 'option' in locals(): block.name = option }}
-                                                                        {{ else: block.name = None }}
-                                                                        {{ return block }}
+                                                                        {{ parameters = None }}
+                                                                        {{ subname = None }}
+                                                                        {{ name = None }}
+                                                                        {{ if 'PARAMETERS' in locals(): parameters = PARAMETERS }}
+                                                                        {{ if 'NAME' in locals(): subname = NAME }}
+                                                                        {{ if 'option' in locals(): name = option }}
+                                                                        {{ return SectionBlock(SECTION_KEY_NOPARSE, parameters, name, subname, NEWLINE + SECTION_CONTENT_NOPARSE) }}
                         |   PACKAGE_KEYWORD (DASH PARAMETERS)? NAME? NEWLINE PACKAGE_CONTENT
-                                                                        {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.keyword = PACKAGE_KEYWORD }}
-                                                                        {{ if 'NAME' in locals(): block.subname = NAME + NEWLINE }}
-                                                                        {{ else: block.subname = NEWLINE }}
-                                                                        {{ if 'PARAMETERS' in locals(): block.parameters = PARAMETERS }}
-                                                                        {{ else: block.parameters = None }}
+                                                                        {{ parameters = None }}
+                                                                        {{ name = None }}
+                                                                        {{ if 'NAME' in locals(): subname = NAME + NEWLINE }}
+                                                                        {{ else: subname = NEWLINE }}
+                                                                        {{ if 'PARAMETERS' in locals(): parameters = PARAMETERS }}
                                                                         {{ _, rawSpecFile = parseByRule('spec_file', PACKAGE_CONTENT) }}
-                                                                        {{ block.content = rawSpecFile.block_list }}
-                                                                        {{ return block }}
-                        |                                               {{ block = Block(BlockTypes.SectionTagType) }}
-                                                                        {{ block.content = [] }}
+                                                                        {{ return PackageBlock(PACKAGE_KEYWORD, parameters, subname, rawSpecFile.block_list) }}
+                        |                                               {{ content = [] }}
                             CHANGELOG_KEYWORD (
-                                changelog                               {{ block.content.append(changelog) }}
+                                changelog                               {{ content.append(changelog) }}
                             )*
-                                                                        {{ block.keyword = CHANGELOG_KEYWORD }}
-                                                                        {{ return block }}
+                                                                        {{ return ChangelogBlock(CHANGELOG_KEYWORD, content) }}
 
 
 
@@ -209,10 +247,7 @@ parser SpecfileParser:
 
 
 
-    rule macro_undefine:    MACRO_UNDEF_KEYWORD MACRO_NAME              {{ block = Block(BlockTypes.MacroUndefinitionType) }}
-                                                                        {{ block.keyword = MACRO_UNDEF_KEYWORD }}
-                                                                        {{ block.name = MACRO_NAME }}
-                                                                        {{ return block }}
+    rule macro_undefine:    MACRO_UNDEF_KEYWORD MACRO_NAME              {{ return MacroUndefinitionBlock(MACRO_UNDEF_KEYWORD, MACRO_NAME) }}
 
 
 %%
